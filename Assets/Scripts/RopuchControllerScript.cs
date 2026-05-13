@@ -204,8 +204,11 @@ public class RopuchControllerScript : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Floor"))
         {
-            canJump = true;
-            jumpsRemaining = maxJumpCount;
+            if (IsOnTopOfCollider(collision))
+            {
+                canJump = true;
+                jumpsRemaining = maxJumpCount;
+            }
         }
     }
 
@@ -215,6 +218,15 @@ public class RopuchControllerScript : MonoBehaviour
         {
             canJump = false;
         }
+    }
+
+    bool IsOnTopOfCollider(Collider2D collision)
+    {
+        Bounds rBounds = rb.GetComponent<Collider2D>().bounds;
+        Bounds cBounds = collision.bounds;
+        float ropuchBottomY = rBounds.min.y;
+        float colliderTopY = cBounds.max.y;
+        return Mathf.Abs(ropuchBottomY - colliderTopY) < 0.1f;
     }
 
     public void LoseLife()

@@ -30,6 +30,8 @@ public class GryficaScript : MonoBehaviour
     bool isAttacking;
     bool isDying;
 
+    float attackClipLength;
+
     void Start()
     {
         ar = gameObject.GetComponent<Animator>();
@@ -44,6 +46,8 @@ public class GryficaScript : MonoBehaviour
         isAttacking = false;
         isDying = false;
         hitsTaken = 0;
+
+        attackClipLength = GetAnimationClipLength("Gryfica-attack");
 
         ar.SetInteger("State", 0);
         ar.speed = 1.0f;
@@ -87,29 +91,9 @@ public class GryficaScript : MonoBehaviour
         ar.SetInteger("State", 1);
         ar.speed = 1.0f;
 
-        // Wait for the full attack state to complete so long clips are fully visible.
-        yield return null;
-        while (!ar.GetCurrentAnimatorStateInfo(0).IsName("Gryfica-attack"))
-        {
-            if (isDying)
-            {
-                isAttacking = false;
-                yield break;
-            }
-
-            yield return null;
-        }
-
-        while (ar.GetCurrentAnimatorStateInfo(0).IsName("Gryfica-attack") && ar.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
-        {
-            if (isDying)
-            {
-                isAttacking = false;
-                yield break;
-            }
-
-            yield return null;
-        }
+        Debug.Log("Gryfica attack triggered. Clip length: " + attackClipLength);
+        float waitTime = attackClipLength > 0.0f ? attackClipLength : 5.5f;
+        yield return new WaitForSeconds(waitTime);
 
         isAttacking = false;
 
@@ -127,18 +111,43 @@ public class GryficaScript : MonoBehaviour
         ar.SetInteger("State", 2);
         ar.speed = yeeshAnimationSpeed;
 
+        if (gryficaExplosion != null)
+        {
+            Vector3 explosionPos = GetGryfCenterPosition();
+            GameObject explosion = Instantiate(gryficaExplosion, explosionPos, transform.rotation);
+            SetExplosionRenderSettings(explosion);
+        }
+
         float yeeshDuration = yeeshTime / Mathf.Max(yeeshAnimationSpeed, 0.01f);
         yield return new WaitForSeconds(yeeshDuration);
 
         yield return new WaitForSeconds(deathDelay);
 
-        if (gryficaExplosion != null)
+        Destroy(gameObject);
+    }
+
+    float GetAnimationClipLength(string clipName)
+    {
+        if (ar == null || ar.runtimeAnimatorController == null)
         {
-            GameObject explosion = Instantiate(gryficaExplosion, transform.position, transform.rotation);
-            SetExplosionRenderSettings(explosion);
+            return 0.0f;
         }
 
-        Destroy(gameObject);
+        AnimationClip[] clips = ar.runtimeAnimatorController.animationClips;
+        foreach (AnimationClip clip in clips)
+        {
+            if (clip != null && clip.name == clipName)
+            {
+                return clip.length;
+            }
+        }
+
+        return 0.0f;
+    }
+
+    Vector3 GetGryfCenterPosition()
+    {
+        return transform.position;
     }
 
     void SetExplosionRenderSettings(GameObject explosion)
