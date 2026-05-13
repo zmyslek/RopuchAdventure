@@ -7,9 +7,6 @@ public class GryficaScript : MonoBehaviour
     Animator ar;
 
     [SerializeField]
-    int healthUnits;
-
-    [SerializeField]
     GameObject gryficaExplosion;
 
     [SerializeField]
@@ -18,21 +15,35 @@ public class GryficaScript : MonoBehaviour
     [SerializeField]
     float yeeshAnimationSpeed;
 
-    bool isYeeshing;
-    bool hasPlayedInitialHitYeesh;
+    [SerializeField]
+    float deathDelay;
+
+    [SerializeField]
+    int explosionLayer;
+
+    [SerializeField]
+    int explosionSortingOrder;
+
+    int maxHits;
+    int hitsTaken;
+
+    bool isAttacking;
     bool isDying;
 
     void Start()
     {
         ar = gameObject.GetComponent<Animator>();
 
-        healthUnits = healthUnits <= 0 ? 1 : healthUnits;
-        yeeshTime = yeeshTime <= 0.0f ? 0.35f : yeeshTime;
-        yeeshAnimationSpeed = yeeshAnimationSpeed <= 0.0f ? 0.6f : yeeshAnimationSpeed;
+        maxHits = 3;
+        yeeshTime = yeeshTime <= 0.0f ? 0.6f : yeeshTime;
+        yeeshAnimationSpeed = yeeshAnimationSpeed <= 0.0f ? 1.0f : yeeshAnimationSpeed;
+        deathDelay = deathDelay <= 0.0f ? 0.2f : deathDelay;
+        explosionLayer = explosionLayer < 0 ? 11 : explosionLayer;
+        explosionSortingOrder = explosionSortingOrder <= 0 ? 12 : explosionSortingOrder;
 
-        isYeeshing = false;
-        hasPlayedInitialHitYeesh = false;
+        isAttacking = false;
         isDying = false;
+        hitsTaken = 0;
 
         ar.SetInteger("State", 0);
         ar.speed = 1.0f;
@@ -40,7 +51,7 @@ public class GryficaScript : MonoBehaviour
 
     void Update()
     {
-        if (!isYeeshing && !isDying)
+        if (!isAttacking && !isDying)
         {
             ar.SetInteger("State", 0);
             ar.speed = 1.0f;
@@ -54,50 +65,100 @@ public class GryficaScript : MonoBehaviour
             return;
         }
 
-        healthUnits--;
+        hitsTaken++;
 
-        if (healthUnits <= 0)
+        if (hitsTaken >= maxHits)
         {
             StartCoroutine(PlayYeeshAndDie());
             return;
         }
 
-        if (!hasPlayedInitialHitYeesh)
-        {
-            hasPlayedInitialHitYeesh = true;
-            StartCoroutine(PlayYeeshOnly());
-        }
+        StartCoroutine(PlayAttackOnly());
     }
 
-    IEnumerator PlayYeeshOnly()
+    IEnumerator PlayAttackOnly()
     {
-        isYeeshing = true;
-        ar.SetInteger("State", 2);
-        ar.speed = yeeshAnimationSpeed;
+        if (isAttacking || isDying)
+        {
+            yield break;
+        }
 
-        float yeeshDuration = yeeshTime / Mathf.Max(yeeshAnimationSpeed, 0.01f);
-        yield return new WaitForSeconds(yeeshDuration);
-
-        isYeeshing = false;
+        isAttacking = true;
+        ar.SetInteger("State", 1);
         ar.speed = 1.0f;
-        ar.SetInteger("State", 0);
+
+        // Wait for the full attack state to complete so long clips are fully visible.
+        yield return null;
+        while (!ar.GetCurrentAnimatorStateInfo(0).IsName("Gryfica-attack"))
+        {
+            if (isDying)
+            {
+                isAttacking = false;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        while (ar.GetCurrentAnimatorStateInfo(0).IsName("Gryfica-attack") && ar.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        {
+            if (isDying)
+            {
+                isAttacking = false;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        isAttacking = false;
+
+        if (!isDying)
+        {
+            ar.SetInteger("State", 0);
+            ar.speed = 1.0f;
+        }
     }
 
     IEnumerator PlayYeeshAndDie()
     {
         isDying = true;
-        isYeeshing = true;
+        isAttacking = false;
         ar.SetInteger("State", 2);
         ar.speed = yeeshAnimationSpeed;
 
         float yeeshDuration = yeeshTime / Mathf.Max(yeeshAnimationSpeed, 0.01f);
         yield return new WaitForSeconds(yeeshDuration);
 
+        yield return new WaitForSeconds(deathDelay);
+
         if (gryficaExplosion != null)
         {
-            Instantiate(gryficaExplosion, transform.position, transform.rotation);
+            GameObject explosion = Instantiate(gryficaExplosion, transform.position, transform.rotation);
+            SetExplosionRenderSettings(explosion);
         }
 
         Destroy(gameObject);
+    }
+
+    void SetExplosionRenderSettings(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        explosion.layer = explosionLayer;
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionRenderSettings(child.gameObject);
+        }
+
+        SpriteRenderer spriteRenderer = explosion.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = explosionSortingOrder;
+        }
     }
 }

@@ -12,8 +12,11 @@ public class RopuchControllerScript : MonoBehaviour
     int lives;
 
     float speed;
+    float walkSpeed;
     float jumpForce;
     float jumpHorizontalForce;
+    float attackAnimationTime;
+    float attackRecoveryTime;
     float moveX;
 
     bool canJump;
@@ -23,6 +26,7 @@ public class RopuchControllerScript : MonoBehaviour
     int maxJumpCount;
     int jumpsRemaining;
     float jumpDirectionX;
+    int attackRestoreState;
 
     [SerializeField]
     GameObject bullet;
@@ -43,8 +47,11 @@ public class RopuchControllerScript : MonoBehaviour
         rGun = GameObject.FindGameObjectWithTag("RightGun");
 
         speed = 7.0f;
-        jumpForce = 8.5f;
-        jumpHorizontalForce = 3.0f;
+        walkSpeed = 3.5f;
+        jumpForce = 6.5f;
+        jumpHorizontalForce = 1.5f;
+        attackAnimationTime = 0.18f;
+        attackRecoveryTime = 0.12f;
         maxJumpCount = 2;
         jumpsRemaining = maxJumpCount;
 
@@ -67,6 +74,7 @@ public class RopuchControllerScript : MonoBehaviour
             if (Mathf.Abs(moveX) > 0.01f)
             {
                 sr.flipX = moveX < 0.0f;
+                ar.SetInteger("State", 1);
             }
 
             if (Input.GetKeyDown(KeyCode.Space) && !isAttacking && jumpsRemaining > 0)
@@ -75,20 +83,9 @@ public class RopuchControllerScript : MonoBehaviour
                 jumpDirectionX = Mathf.Abs(moveX) > 0.01f ? Mathf.Sign(moveX) : (sr.flipX ? -1.0f : 1.0f);
                 jumpRequested = true;
             }
-            else if (Input.GetKeyDown(KeyCode.Return))
+            else if (Input.GetKeyDown(KeyCode.Return) && !isAttacking)
             {
-                if (isAttacking)
-                {
-                    isAttacking = false;
-                    ar.SetInteger("State", 0);
-                }
-                else if (Mathf.Abs(moveX) < 0.01f)
-                {
-                    ar.SetInteger("State", 2);
-                    isAttacking = true;
-                    ShootBullet();
-                    rb.velocity = new Vector2(0.0f, 0.0f);
-                }
+                StartCoroutine(PlayAttackSequence());
             }
             else if (!hasAnyInput && !isAttacking)
             {
@@ -97,11 +94,14 @@ public class RopuchControllerScript : MonoBehaviour
         }
         else
         {
-            ar.SetInteger("State", 1);
-
             if (Input.GetKeyDown(KeyCode.Return) && !isAttacking)
             {
-                ShootBullet();
+                StartCoroutine(PlayAttackSequence());
+            }
+
+            if (!isAttacking)
+            {
+                ar.SetInteger("State", 1);
             }
         }
 
@@ -112,6 +112,30 @@ public class RopuchControllerScript : MonoBehaviour
 
         bool isMovingOrAirborne = !canJump || Mathf.Abs(moveX) > 0.01f || Mathf.Abs(rb.velocity.x) > 0.01f || Mathf.Abs(rb.velocity.y) > 0.01f;
         ar.speed = (ar.GetInteger("State") == 0 && isMovingOrAirborne) ? 0.0f : 1.0f;
+    }
+
+    IEnumerator PlayAttackSequence()
+    {
+        isAttacking = true;
+        attackRestoreState = ar.GetInteger("State");
+        if (attackRestoreState != 0 && attackRestoreState != 1)
+        {
+            attackRestoreState = 0;
+        }
+
+        rb.velocity = new Vector2(0.0f, 0.0f);
+        ar.SetInteger("State", 2);
+        ar.speed = 1.0f;
+
+        yield return new WaitForSeconds(attackAnimationTime);
+
+        ShootBullet();
+
+        yield return new WaitForSeconds(attackRecoveryTime);
+
+        isAttacking = false;
+        ar.SetInteger("State", attackRestoreState);
+        ar.speed = 1.0f;
     }
 
     void FixedUpdate()
@@ -126,7 +150,8 @@ public class RopuchControllerScript : MonoBehaviour
 
         if (canJump && !isAttacking)
         {
-            Vector2 nextPos = rb.position + new Vector2(moveX * speed * Time.fixedDeltaTime, 0.0f);
+            float currentSpeed = Mathf.Abs(moveX) > 0.01f ? walkSpeed : speed;
+            Vector2 nextPos = rb.position + new Vector2(moveX * currentSpeed * Time.fixedDeltaTime, 0.0f);
             rb.MovePosition(nextPos);
             rb.velocity = new Vector2(0.0f, rb.velocity.y);
         }

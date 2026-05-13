@@ -7,12 +7,20 @@ public class RopuchBulletScript : MonoBehaviour
     float speed;
     float lifetime;
     float dirX;
+    GameObject impactInstance;
     public GameObject bulletImpact;
 
     void Start()
     {
         speed = 0.1f;
         lifetime = 3.0f;
+
+        if (bulletImpact != null)
+        {
+            impactInstance = Instantiate(bulletImpact, transform.position, transform.rotation, transform);
+            impactInstance.transform.localPosition = Vector3.zero;
+            impactInstance.transform.localRotation = Quaternion.identity;
+        }
     }
 
     void Update()
@@ -37,11 +45,10 @@ public class RopuchBulletScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Drone"))
+        if (collision.gameObject.CompareTag("Gryf"))
         {
-            collision.gameObject.GetComponent<DroneScript>().decrLifeUnits();
+            collision.gameObject.GetComponent<GryficaScript>().decrLifeUnits();
             Destroy(gameObject);
-            Instantiate(bulletImpact, transform.position, transform.rotation);
             return;
         }
 
@@ -50,7 +57,6 @@ public class RopuchBulletScript : MonoBehaviour
         {
             gryficaScript.decrLifeUnits();
             Destroy(gameObject);
-            Instantiate(bulletImpact, transform.position, transform.rotation);
         }
     }
 }
