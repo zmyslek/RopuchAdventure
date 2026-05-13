@@ -5,8 +5,6 @@ using UnityEngine;
 public class GryficaScript : MonoBehaviour
 {
     Animator ar;
-    Rigidbody2D rb;
-    SpriteRenderer sr;
 
     [SerializeField]
     int healthUnits;
@@ -18,181 +16,88 @@ public class GryficaScript : MonoBehaviour
     float yeeshTime;
 
     [SerializeField]
-    float attackTime;
+    float yeeshAnimationSpeed;
 
-    [SerializeField]
-    float attackJumpForce;
-
-    [SerializeField]
-    float attackForwardForce;
-
-    bool canJump;
     bool isYeeshing;
-    bool isAttacking;
-    bool applyAttackImpulse;
-    float attackTimer;
-
-    GameObject ropuch;
+    bool hasPlayedInitialHitYeesh;
+    bool isDying;
 
     void Start()
     {
         ar = gameObject.GetComponent<Animator>();
-        rb = gameObject.GetComponent<Rigidbody2D>();
-        sr = gameObject.GetComponent<SpriteRenderer>();
 
-        healthUnits = healthUnits <= 0 ? 3 : healthUnits;
+        healthUnits = healthUnits <= 0 ? 1 : healthUnits;
         yeeshTime = yeeshTime <= 0.0f ? 0.35f : yeeshTime;
-        attackTime = attackTime <= 0.0f ? 0.35f : attackTime;
-        attackJumpForce = attackJumpForce <= 0.0f ? 8.0f : attackJumpForce;
-        attackForwardForce = attackForwardForce <= 0.0f ? 7.0f : attackForwardForce;
+        yeeshAnimationSpeed = yeeshAnimationSpeed <= 0.0f ? 0.6f : yeeshAnimationSpeed;
 
-        canJump = false;
         isYeeshing = false;
-        isAttacking = false;
-        applyAttackImpulse = false;
-        attackTimer = 0.0f;
+        hasPlayedInitialHitYeesh = false;
+        isDying = false;
 
         ar.SetInteger("State", 0);
-        FindRopuch();
+        ar.speed = 1.0f;
     }
 
     void Update()
     {
-        if (ropuch == null)
-        {
-            FindRopuch();
-        }
-
-        if (Input.GetKeyDown(KeyCode.Return) && canJump && !isYeeshing && !isAttacking)
-        {
-            BeginAttack();
-        }
-
-        if (isYeeshing)
-        {
-            attackTimer -= Time.deltaTime;
-            if (attackTimer <= 0.0f)
-            {
-                isYeeshing = false;
-                isAttacking = true;
-                applyAttackImpulse = true;
-                attackTimer = attackTime;
-                ar.SetInteger("State", 1);
-            }
-        }
-        else if (isAttacking)
-        {
-            attackTimer -= Time.deltaTime;
-            if (attackTimer <= 0.0f)
-            {
-                isAttacking = false;
-                attackTimer = 0.0f;
-                ar.SetInteger("State", 0);
-            }
-        }
-        else if (canJump)
+        if (!isYeeshing && !isDying)
         {
             ar.SetInteger("State", 0);
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (applyAttackImpulse)
-        {
-            applyAttackImpulse = false;
-            rb.velocity = new Vector2(0.0f, 0.0f);
-
-            float attackDirection = sr.flipX ? -1.0f : 1.0f;
-            rb.AddForce(new Vector2(attackDirection * attackForwardForce, attackJumpForce), ForceMode2D.Impulse);
-        }
-    }
-
-    void BeginAttack()
-    {
-        if (ropuch != null)
-        {
-            sr.flipX = ropuch.transform.position.x < transform.position.x;
-        }
-
-        isYeeshing = true;
-        attackTimer = yeeshTime;
-        ar.SetInteger("State", 2);
-        rb.velocity = new Vector2(0.0f, 0.0f);
-    }
-
-    void FindRopuch()
-    {
-        GameObject ropuchByTag = GameObject.FindGameObjectWithTag("Ropuch");
-        if (ropuchByTag != null)
-        {
-            ropuch = ropuchByTag;
-            return;
-        }
-
-        RopuchControllerScript ropuchController = FindObjectOfType<RopuchControllerScript>();
-        if (ropuchController != null)
-        {
-            ropuch = ropuchController.gameObject;
+            ar.speed = 1.0f;
         }
     }
 
     public void decrLifeUnits()
     {
-        healthUnits--;
-        if (healthUnits <= 0)
-        {
-            Destroy(gameObject);
-
-            if (gryficaExplosion != null)
-            {
-                Instantiate(gryficaExplosion, transform.position, transform.rotation);
-            }
-        }
-    }
-
-    private void HandleRopuchHit(GameObject other)
-    {
-        if (!isAttacking)
+        if (isDying)
         {
             return;
         }
 
-        RopuchControllerScript ropuchController = other.GetComponent<RopuchControllerScript>();
-        if (ropuchController != null)
+        healthUnits--;
+
+        if (healthUnits <= 0)
         {
-            ropuchController.LoseLife();
+            StartCoroutine(PlayYeeshAndDie());
+            return;
+        }
+
+        if (!hasPlayedInitialHitYeesh)
+        {
+            hasPlayedInitialHitYeesh = true;
+            StartCoroutine(PlayYeeshOnly());
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    IEnumerator PlayYeeshOnly()
     {
-        if (collision.gameObject.CompareTag("Floor"))
-        {
-            canJump = true;
-        }
+        isYeeshing = true;
+        ar.SetInteger("State", 2);
+        ar.speed = yeeshAnimationSpeed;
 
-        HandleRopuchHit(collision.gameObject);
+        float yeeshDuration = yeeshTime / Mathf.Max(yeeshAnimationSpeed, 0.01f);
+        yield return new WaitForSeconds(yeeshDuration);
+
+        isYeeshing = false;
+        ar.speed = 1.0f;
+        ar.SetInteger("State", 0);
     }
 
-    private void OnTriggerStay2D(Collider2D collision)
+    IEnumerator PlayYeeshAndDie()
     {
-        if (collision.gameObject.CompareTag("Floor"))
-        {
-            canJump = true;
-        }
-    }
+        isDying = true;
+        isYeeshing = true;
+        ar.SetInteger("State", 2);
+        ar.speed = yeeshAnimationSpeed;
 
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.gameObject.CompareTag("Floor"))
-        {
-            canJump = false;
-        }
-    }
+        float yeeshDuration = yeeshTime / Mathf.Max(yeeshAnimationSpeed, 0.01f);
+        yield return new WaitForSeconds(yeeshDuration);
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        HandleRopuchHit(collision.gameObject);
+        if (gryficaExplosion != null)
+        {
+            Instantiate(gryficaExplosion, transform.position, transform.rotation);
+        }
+
+        Destroy(gameObject);
     }
 }

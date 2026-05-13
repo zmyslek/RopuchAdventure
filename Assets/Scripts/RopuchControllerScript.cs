@@ -13,11 +13,16 @@ public class RopuchControllerScript : MonoBehaviour
 
     float speed;
     float jumpForce;
+    float jumpHorizontalForce;
     float moveX;
 
     bool canJump;
     bool jumpRequested;
     bool isAttacking;
+
+    int maxJumpCount;
+    int jumpsRemaining;
+    float jumpDirectionX;
 
     [SerializeField]
     GameObject bullet;
@@ -31,11 +36,17 @@ public class RopuchControllerScript : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody2D>();
         sr = gameObject.GetComponent<SpriteRenderer>();
 
+        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
         lGun = GameObject.FindGameObjectWithTag("LeftGun");
         rGun = GameObject.FindGameObjectWithTag("RightGun");
 
         speed = 7.0f;
-        jumpForce = 7.0f;
+        jumpForce = 8.5f;
+        jumpHorizontalForce = 3.0f;
+        maxJumpCount = 2;
+        jumpsRemaining = maxJumpCount;
 
         lives = lives <= 0 ? 3 : lives;
 
@@ -58,9 +69,10 @@ public class RopuchControllerScript : MonoBehaviour
                 sr.flipX = moveX < 0.0f;
             }
 
-            if (Input.GetKeyDown(KeyCode.Space) && !isAttacking)
+            if (Input.GetKeyDown(KeyCode.Space) && !isAttacking && jumpsRemaining > 0)
             {
                 ar.SetInteger("State", 1);
+                jumpDirectionX = Mathf.Abs(moveX) > 0.01f ? Mathf.Sign(moveX) : (sr.flipX ? -1.0f : 1.0f);
                 jumpRequested = true;
             }
             else if (Input.GetKeyDown(KeyCode.Return))
@@ -106,14 +118,17 @@ public class RopuchControllerScript : MonoBehaviour
     {
         if (jumpRequested)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.velocity = new Vector2(jumpDirectionX * jumpHorizontalForce, jumpForce);
+            jumpsRemaining--;
             jumpRequested = false;
             canJump = false;
         }
 
         if (canJump && !isAttacking)
         {
-            rb.velocity = new Vector2(moveX * speed, 0.0f);
+            Vector2 nextPos = rb.position + new Vector2(moveX * speed * Time.fixedDeltaTime, 0.0f);
+            rb.MovePosition(nextPos);
+            rb.velocity = new Vector2(0.0f, rb.velocity.y);
         }
         else if (canJump && isAttacking)
         {
@@ -156,6 +171,7 @@ public class RopuchControllerScript : MonoBehaviour
         if (collision.gameObject.CompareTag("Floor"))
         {
             canJump = true;
+            jumpsRemaining = maxJumpCount;
         }
     }
 
@@ -164,6 +180,7 @@ public class RopuchControllerScript : MonoBehaviour
         if (collision.gameObject.CompareTag("Floor"))
         {
             canJump = true;
+            jumpsRemaining = maxJumpCount;
         }
     }
 
