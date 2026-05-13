@@ -8,6 +8,8 @@ TagManager:
   - Gryf
   - LeftGun
   - RightGun
+  - DziuniaLeftGun
+  - DziuniaRightGun
   layers:
   - Default
   - TransparentFX
