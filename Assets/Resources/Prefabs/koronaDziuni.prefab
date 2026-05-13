@@ -220,5 +220,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 0.12
   lifetime: 3
-  bulletColor: {r: 0.72, g: 0.32, b: 1, a: 1}
+  bulletColor: {r: 1, g: 1, b: 1, a: 1}
   bulletImpact: {fileID: 362261158077530393, guid: a01dafbe09450ce4a873b5206ada171d, type: 3}

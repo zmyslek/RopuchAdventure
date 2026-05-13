@@ -77,8 +77,7 @@ public class DziuniaScript : MonoBehaviour
             return;
         }
 
-        bool facingLeft = sr != null && sr.flipX;
-        Transform gun = facingLeft ? leftGun : rightGun;
+        Transform gun = leftGun;
         if (gun == null)
         {
             return;
@@ -89,7 +88,7 @@ public class DziuniaScript : MonoBehaviour
         DziuniaBulletScript bulletScript = newBullet.GetComponent<DziuniaBulletScript>();
         if (bulletScript != null)
         {
-            bulletScript.setDir(facingLeft);
+            bulletScript.setDir(true); // Always shoot left
         }
 
         nextShootTime = Time.time + shootCooldown;
@@ -97,6 +96,13 @@ public class DziuniaScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // Check if hit by Ropuch's bullet
+        if (collision.gameObject.GetComponent<RopuchBulletScript>() != null)
+        {
+            TakeHit();
+            return;
+        }
+
         if (!collision.gameObject.CompareTag("Gryf"))
         {
             return;

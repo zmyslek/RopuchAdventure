@@ -1,11 +1,13 @@
 -dziunia 
-  -jumping
-  -shooting
+  -shooting frequency and start
+  -dying
 -ropuch
   -camera react
+  -dying
   -going through the entire thing to ensure it's doable
 -bg
   -platforms alignment
+  -limits
 -audio
 -start screen
 -end screen
