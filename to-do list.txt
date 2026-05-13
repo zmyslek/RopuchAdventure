@@ -1,13 +1,21 @@
 -dziunia 
   -shooting frequency and start
   -dying
+  -impact
+  -audio
 -ropuch
   -camera react
   -dying
+  -bullet sound
   -going through the entire thing to ensure it's doable
+-gnilda
+  -spawn
+  -flipX
+  -die audio
 -bg
   -platforms alignment
-  -limits
--audio
--start screen
+  -limits- fall over == game over
+  -remove temp platforms
 -end screen
+  -quit button
+  -score

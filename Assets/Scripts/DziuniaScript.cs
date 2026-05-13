@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class DziuniaScript : MonoBehaviour
 {
     [SerializeField]
@@ -15,18 +15,20 @@ public class DziuniaScript : MonoBehaviour
     Transform rightGun;
 
     [SerializeField]
-    float shootCooldown = 0.25f;
+    float shootCooldown = 0.6f;
 
     [SerializeField]
     float initialShootDelay = 1.0f;
 
     SpriteRenderer sr;
+    DziuniaImpactScript impactScript;
     float nextShootTime;
     bool canShoot;
 
     void Start()
     {
         sr = gameObject.GetComponent<SpriteRenderer>();
+        impactScript = gameObject.GetComponent<DziuniaImpactScript>();
         nextShootTime = Time.time + initialShootDelay;
         canShoot = false;
 
@@ -63,6 +65,17 @@ public class DziuniaScript : MonoBehaviour
     {
         canShoot = true;
         nextShootTime = Time.time;
+
+        // Play audio with DziuniaShow tag
+        GameObject audioObject = GameObject.FindGameObjectWithTag("DziuniaShow");
+        if (audioObject != null)
+        {
+            AudioSource audioSource = audioObject.GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.Play();
+            }
+        }
     }
 
     private void OnBecameInvisible()
@@ -118,11 +131,18 @@ public class DziuniaScript : MonoBehaviour
             return;
         }
 
+        // Play impact reaction - all bullets cause a reaction
+        if (impactScript != null)
+        {
+            impactScript.PlayImpactReaction();
+        }
+
         lives--;
 
         if (lives <= 0)
         {
             Destroy(gameObject);
+            SceneManager.LoadScene(2);
         }
     }
 }

@@ -56,24 +56,13 @@ public class DziuniaBulletScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Gryf"))
+        // Do not affect Gryfica (enemy) with Dziunia's bullets
+        if (collision.gameObject.GetComponent<GryficaScript>() != null)
         {
-            GryficaScript gryficaScript = collision.gameObject.GetComponent<GryficaScript>();
-            if (gryficaScript != null)
-            {
-                gryficaScript.decrLifeUnits();
-            }
-
-            Destroy(gameObject);
             return;
         }
 
-        GryficaScript otherGryficaScript = collision.gameObject.GetComponent<GryficaScript>();
-        if (otherGryficaScript != null)
-        {
-            otherGryficaScript.decrLifeUnits();
-            Destroy(gameObject);
-        }
+        // existing behavior for other collisions can remain (e.g., hitting the player)
     }
 
     void ApplyTint(GameObject target)

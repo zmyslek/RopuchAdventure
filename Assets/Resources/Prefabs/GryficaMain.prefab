@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4940621807352625582}
   - component: {fileID: 5956871880587481067}
   - component: {fileID: 6833142782656868629}
+  - component: {fileID: 2842191946463786115}
   m_Layer: 0
   m_Name: Gryfica
   m_TagString: Gryf
@@ -85,7 +86,7 @@ SpriteRenderer:
   m_Size: {x: 14.4, y: 14.4}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &596111934157466439
@@ -293,6 +294,24 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.8670783, y: 0.30046225}
   m_EdgeRadius: 0
+--- !u!114 &2842191946463786115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7590085833004979153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2533b5d7e6f20d47ae7f6839eb36589, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gryficaExplosion: {fileID: 162584487599433031, guid: 39f852c28f9c3fd45a427c24f3564ba7, type: 3}
+  yeeshTime: 0
+  yeeshAnimationSpeed: 0
+  deathDelay: 0
+  explosionLayer: 0
+  explosionSortingOrder: 0
 --- !u!1 &8848200765952559720
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,6 +5,7 @@ using UnityEngine;
 public class GryficaScript : MonoBehaviour
 {
     Animator ar;
+    SpriteRenderer sr;
 
     [SerializeField]
     GameObject gryficaExplosion;
@@ -40,6 +41,7 @@ public class GryficaScript : MonoBehaviour
     void Start()
     {
         ar = gameObject.GetComponent<Animator>();
+        sr = gameObject.GetComponentInChildren<SpriteRenderer>();
 
         maxHits = 3;
         yeeshTime = yeeshTime <= 0.0f ? 0.6f : yeeshTime;
@@ -90,6 +92,13 @@ public class GryficaScript : MonoBehaviour
         if (isAttacking || isDying)
         {
             yield break;
+        }
+
+        // Face the player before attacking so bullets fire in correct direction
+        var player = FindObjectOfType<RopuchControllerScript>();
+        if (player != null && sr != null)
+        {
+            sr.flipX = player.transform.position.x < transform.position.x;
         }
 
         isAttacking = true;

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RopuchControllerScript : MonoBehaviour
 {
@@ -123,19 +124,32 @@ public class RopuchControllerScript : MonoBehaviour
             attackRestoreState = 0;
         }
 
-        rb.velocity = new Vector2(0.0f, 0.0f);
-        ar.SetInteger("State", 2);
-        ar.speed = 1.0f;
+        bool wasIdle = attackRestoreState == 0;
+        bool showAttackAnim = wasIdle && canJump; // only play attack anim if idle and on ground
 
-        yield return new WaitForSeconds(attackAnimationTime);
+        if (showAttackAnim)
+        {
+            rb.velocity = new Vector2(0.0f, 0.0f);
+            ar.SetInteger("State", 2);
+            ar.speed = 1.0f;
 
-        ShootBullet();
+            yield return new WaitForSeconds(attackAnimationTime);
 
-        yield return new WaitForSeconds(attackRecoveryTime);
+            ShootBullet();
 
-        isAttacking = false;
-        ar.SetInteger("State", attackRestoreState);
-        ar.speed = 1.0f;
+            yield return new WaitForSeconds(attackRecoveryTime);
+
+            isAttacking = false;
+            ar.SetInteger("State", attackRestoreState);
+            ar.speed = 1.0f;
+        }
+        else
+        {
+            // Shooting without changing animation (e.g., while jumping or walking)
+            ShootBullet();
+            yield return new WaitForSeconds(attackRecoveryTime);
+            isAttacking = false;
+        }
     }
 
     void FixedUpdate()
@@ -193,7 +207,7 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Floor"))
+        if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             canJump = true;
             jumpsRemaining = maxJumpCount;
@@ -202,7 +216,7 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Floor"))
+        if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             if (IsOnTopOfCollider(collision))
             {
@@ -219,11 +233,20 @@ public class RopuchControllerScript : MonoBehaviour
                 LoseLife();
             }
         }
+
+        if (collision.gameObject.CompareTag("Dziunia"))
+        {
+            DziuniaScript dziunia = collision.GetComponent<DziuniaScript>();
+            if (dziunia != null)
+            {
+                LoseLife();
+            }
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Floor"))
+        if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             canJump = false;
         }
@@ -244,6 +267,7 @@ public class RopuchControllerScript : MonoBehaviour
         if (lives <= 0)
         {
             Destroy(gameObject);
+            SceneManager.LoadScene(2);
         }
     }
 }
