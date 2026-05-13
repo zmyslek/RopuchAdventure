@@ -50,8 +50,8 @@ public class RopuchControllerScript : MonoBehaviour
         walkSpeed = 3.5f;
         jumpForce = 6.5f;
         jumpHorizontalForce = 1.5f;
-        attackAnimationTime = 0.18f;
-        attackRecoveryTime = 0.12f;
+        attackAnimationTime = 0.5f;
+        attackRecoveryTime = 0.3f;
         maxJumpCount = 2;
         jumpsRemaining = maxJumpCount;
 
@@ -208,6 +208,15 @@ public class RopuchControllerScript : MonoBehaviour
             {
                 canJump = true;
                 jumpsRemaining = maxJumpCount;
+            }
+        }
+
+        if (collision.gameObject.CompareTag("Gryf"))
+        {
+            GryficaScript gryfica = collision.GetComponent<GryficaScript>();
+            if (gryfica != null && !gryfica.IsDying)
+            {
+                LoseLife();
             }
         }
     }

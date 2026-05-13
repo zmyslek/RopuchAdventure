@@ -32,6 +32,11 @@ public class GryficaScript : MonoBehaviour
 
     float attackClipLength;
 
+    public bool IsDying
+    {
+        get { return isDying; }
+    }
+
     void Start()
     {
         ar = gameObject.GetComponent<Animator>();
@@ -91,8 +96,7 @@ public class GryficaScript : MonoBehaviour
         ar.SetInteger("State", 1);
         ar.speed = 1.0f;
 
-        Debug.Log("Gryfica attack triggered. Clip length: " + attackClipLength);
-        float waitTime = attackClipLength > 0.0f ? attackClipLength : 5.5f;
+        float waitTime = Mathf.Max(attackClipLength, 5.25f);
         yield return new WaitForSeconds(waitTime);
 
         isAttacking = false;

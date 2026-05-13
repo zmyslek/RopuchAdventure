@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: c069f96913cc057408c0f73138079cfb
+guid: 63b03eaa85550aa41a7d451f2b848e58
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 128
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -82,6 +82,19 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
@@ -110,13 +123,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: frame_0000_0
+      name: Tiles_example_7
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1440
-        height: 1440
+        x: 48
+        y: 83
+        width: 48
+        height: 13
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,8 +137,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0d4bb6fa1e3ae754d85a33fc19fd7973
-      internalID: -1511260575
+      spriteID: bb14ad026306e424a8d4bb287d761ccb
+      internalID: -308910492
       vertices: []
       indices: 
       edges: []
@@ -141,7 +154,21 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      frame_0000_0: -1511260575
+      Tiles_example_0: 452195895
+      Tiles_example_1: -756705131
+      Tiles_example_10: -1069821494
+      Tiles_example_11: 854875804
+      Tiles_example_12: 520221941
+      Tiles_example_13: 1917792669
+      Tiles_example_14: -1220953969
+      Tiles_example_2: -1297179394
+      Tiles_example_3: 1356625588
+      Tiles_example_4: 395174358
+      Tiles_example_5: -1084324360
+      Tiles_example_6: -1793153719
+      Tiles_example_7: -308910492
+      Tiles_example_8: -908299483
+      Tiles_example_9: 292473521
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
