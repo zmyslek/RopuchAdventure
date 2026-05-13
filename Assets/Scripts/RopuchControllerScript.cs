@@ -48,7 +48,7 @@ public class RopuchControllerScript : MonoBehaviour
 
         speed = 7.0f;
         walkSpeed = 3.5f;
-        jumpForce = 6.5f;
+        jumpForce = 6.9f;
         jumpHorizontalForce = 1.5f;
         attackAnimationTime = 0.5f;
         attackRecoveryTime = 0.3f;

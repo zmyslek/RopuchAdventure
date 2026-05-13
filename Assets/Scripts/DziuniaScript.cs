@@ -59,6 +59,17 @@ public class DziuniaScript : MonoBehaviour
         }
     }
 
+    private void OnBecameVisible()
+    {
+        canShoot = true;
+        nextShootTime = Time.time;
+    }
+
+    private void OnBecameInvisible()
+    {
+        canShoot = false;
+    }
+
     public void ShootBullet()
     {
         if (bullet == null || Time.time < nextShootTime)
@@ -86,13 +97,6 @@ public class DziuniaScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("MainCamera"))
-        {
-            canShoot = true;
-            nextShootTime = Time.time;
-            return;
-        }
-
         if (!collision.gameObject.CompareTag("Gryf"))
         {
             return;

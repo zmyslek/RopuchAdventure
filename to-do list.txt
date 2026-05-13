@@ -1,0 +1,11 @@
+-dziunia 
+  -jumping
+  -shooting
+-ropuch
+  -camera react
+  -going through the entire thing to ensure it's doable
+-bg
+  -platforms alignment
+-audio
+-start screen
+-end screen
