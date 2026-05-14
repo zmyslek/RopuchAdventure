@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RopuchBulletScript : MonoBehaviour
@@ -9,11 +7,18 @@ public class RopuchBulletScript : MonoBehaviour
     float dirX;
     GameObject impactInstance;
     public GameObject bulletImpact;
+    bool isDespawning;
+
+    [SerializeField]
+    AudioClip ropuchBulletSound;
 
     void Start()
     {
         speed = 0.1f;
         lifetime = 3.0f;
+        isDespawning = false;
+
+        PlayLaunchSound();
 
         if (bulletImpact != null)
         {
@@ -28,7 +33,7 @@ public class RopuchBulletScript : MonoBehaviour
         lifetime -= Time.deltaTime;
         if (lifetime <= 0.0f)
         {
-            Destroy(gameObject);
+            DestroyBullet();
         }
     }
 
@@ -47,16 +52,49 @@ public class RopuchBulletScript : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Gryf"))
         {
-            collision.gameObject.GetComponent<GryficaScript>().decrLifeUnits();
-            Destroy(gameObject);
+            GryficaScript gryficaScript = collision.gameObject.GetComponent<GryficaScript>();
+            if (gryficaScript != null)
+            {
+                gryficaScript.decrLifeUnits();
+            }
+
+            DestroyBullet();
             return;
         }
 
-        GryficaScript gryficaScript = collision.gameObject.GetComponent<GryficaScript>();
-        if (gryficaScript != null)
+        GryficaScript gryficaScriptOnCollision = collision.gameObject.GetComponent<GryficaScript>();
+        if (gryficaScriptOnCollision != null)
         {
-            gryficaScript.decrLifeUnits();
-            Destroy(gameObject);
+            gryficaScriptOnCollision.decrLifeUnits();
+            DestroyBullet();
+        }
+    }
+
+    void DestroyBullet()
+    {
+        if (isDespawning)
+        {
+            return;
+        }
+
+        isDespawning = true;
+        PlayDestroySound();
+        Destroy(gameObject);
+    }
+
+    void PlayLaunchSound()
+    {
+        if (ropuchBulletSound != null)
+        {
+            AudioSource.PlayClipAtPoint(ropuchBulletSound, transform.position, 0.35f);
+        }
+    }
+
+    void PlayDestroySound()
+    {
+        if (ropuchBulletSound != null)
+        {
+            AudioSource.PlayClipAtPoint(ropuchBulletSound, transform.position, 0.5f);
         }
     }
 }

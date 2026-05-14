@@ -25,6 +25,9 @@ public class GryficaScript : MonoBehaviour
     [SerializeField]
     int explosionSortingOrder;
 
+    [SerializeField]
+    AudioClip gnildaDeadAudio;
+
     int maxHits;
     int hitsTaken;
 
@@ -131,6 +134,8 @@ public class GryficaScript : MonoBehaviour
             SetExplosionRenderSettings(explosion);
         }
 
+        PlayGnildaDeadAudio();
+
         float yeeshDuration = yeeshTime / Mathf.Max(yeeshAnimationSpeed, 0.01f);
         yield return new WaitForSeconds(yeeshDuration);
 
@@ -182,5 +187,15 @@ public class GryficaScript : MonoBehaviour
         {
             spriteRenderer.sortingOrder = explosionSortingOrder;
         }
+    }
+
+    void PlayGnildaDeadAudio()
+    {
+        if (gnildaDeadAudio == null)
+        {
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(gnildaDeadAudio, transform.position);
     }
 }

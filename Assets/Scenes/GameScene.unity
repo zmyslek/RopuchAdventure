@@ -6444,7 +6444,7 @@ MonoBehaviour:
   bullet: {fileID: 2431905344048085032, guid: 4bb13e445dbf9014093926a96c209300, type: 3}
   leftGun: {fileID: 524197608}
   rightGun: {fileID: 1664048101}
-  shootCooldown: 0.25
+  shootCooldown: 0.9
   initialShootDelay: 1
 --- !u!95 &1979973373
 Animator:

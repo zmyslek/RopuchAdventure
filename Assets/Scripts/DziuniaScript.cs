@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 public class DziuniaScript : MonoBehaviour
@@ -15,15 +16,22 @@ public class DziuniaScript : MonoBehaviour
     Transform rightGun;
 
     [SerializeField]
-    float shootCooldown = 0.6f;
+    float shootCooldown = 0.9f;
 
     [SerializeField]
     float initialShootDelay = 1.0f;
+
+    [SerializeField]
+    float deathDelay = 0.4f;
+
+    [SerializeField]
+    AudioClip dziuniaShowAudio;
 
     SpriteRenderer sr;
     DziuniaImpactScript impactScript;
     float nextShootTime;
     bool canShoot;
+    bool isDying;
 
     void Start()
     {
@@ -31,8 +39,10 @@ public class DziuniaScript : MonoBehaviour
         impactScript = gameObject.GetComponent<DziuniaImpactScript>();
         nextShootTime = Time.time + initialShootDelay;
         canShoot = false;
+        isDying = false;
 
         lives = lives <= 0 ? 10 : lives;
+        deathDelay = deathDelay <= 0.0f ? 0.4f : deathDelay;
 
         if (leftGun == null)
         {
@@ -55,7 +65,7 @@ public class DziuniaScript : MonoBehaviour
 
     void Update()
     {
-        if (canShoot && Time.time >= nextShootTime)
+        if (!isDying && canShoot && Time.time >= nextShootTime)
         {
             ShootBullet();
         }
@@ -63,19 +73,16 @@ public class DziuniaScript : MonoBehaviour
 
     private void OnBecameVisible()
     {
+        if (isDying)
+        {
+            return;
+        }
+
         canShoot = true;
         nextShootTime = Time.time;
 
         // Play audio with DziuniaShow tag
-        GameObject audioObject = GameObject.FindGameObjectWithTag("DziuniaShow");
-        if (audioObject != null)
-        {
-            AudioSource audioSource = audioObject.GetComponent<AudioSource>();
-            if (audioSource != null)
-            {
-                audioSource.Play();
-            }
-        }
+        PlayDziuniaShowAudio();
     }
 
     private void OnBecameInvisible()
@@ -85,7 +92,7 @@ public class DziuniaScript : MonoBehaviour
 
     public void ShootBullet()
     {
-        if (bullet == null || Time.time < nextShootTime)
+        if (bullet == null || isDying || Time.time < nextShootTime)
         {
             return;
         }
@@ -109,6 +116,11 @@ public class DziuniaScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (isDying)
+        {
+            return;
+        }
+
         // Check if hit by Ropuch's bullet
         if (collision.gameObject.GetComponent<RopuchBulletScript>() != null)
         {
@@ -126,8 +138,18 @@ public class DziuniaScript : MonoBehaviour
 
     public void TakeHit()
     {
+        if (lives <= 0 || isDying)
+        {
+            return;
+        }
+
+        lives--;
+
         if (lives <= 0)
         {
+            isDying = true;
+            canShoot = false;
+            StartCoroutine(PlayDeathSequence());
             return;
         }
 
@@ -136,13 +158,27 @@ public class DziuniaScript : MonoBehaviour
         {
             impactScript.PlayImpactReaction();
         }
+    }
 
-        lives--;
-
-        if (lives <= 0)
+    IEnumerator PlayDeathSequence()
+    {
+        if (impactScript != null)
         {
-            Destroy(gameObject);
-            SceneManager.LoadScene(2);
+            impactScript.PlayImpactReaction();
         }
+
+        yield return new WaitForSeconds(deathDelay);
+
+        SceneManager.LoadScene(2);
+    }
+
+    void PlayDziuniaShowAudio()
+    {
+        if (dziuniaShowAudio == null)
+        {
+            return;
+        }
+
+        AudioSource.PlayClipAtPoint(dziuniaShowAudio, transform.position);
     }
 }

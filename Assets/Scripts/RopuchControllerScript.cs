@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class RopuchControllerScript : MonoBehaviour
 {
+    const float ouchSoundCooldown = 0.4f;
+
     Animator ar;
     Rigidbody2D rb;
     SpriteRenderer sr;
@@ -28,6 +30,11 @@ public class RopuchControllerScript : MonoBehaviour
     int jumpsRemaining;
     float jumpDirectionX;
     int attackRestoreState;
+
+    [SerializeField]
+    AudioClip ouchAudio;
+
+    float nextOuchSoundTime;
 
     [SerializeField]
     GameObject bullet;
@@ -60,6 +67,7 @@ public class RopuchControllerScript : MonoBehaviour
 
         canJump = false;
         jumpRequested = false;
+        nextOuchSoundTime = 0.0f;
 
         isAttacking = false;
     }
@@ -264,10 +272,29 @@ public class RopuchControllerScript : MonoBehaviour
     public void LoseLife()
     {
         lives--;
+
+        PlayOuchSound();
+
         if (lives <= 0)
         {
             Destroy(gameObject);
             SceneManager.LoadScene(2);
         }
+    }
+
+    void PlayOuchSound()
+    {
+        if (Time.time < nextOuchSoundTime)
+        {
+            return;
+        }
+
+        if (ouchAudio == null)
+        {
+            return;
+        }
+
+        nextOuchSoundTime = Time.time + ouchSoundCooldown;
+        AudioSource.PlayClipAtPoint(ouchAudio, transform.position);
     }
 }

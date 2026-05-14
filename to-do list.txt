@@ -1,17 +1,20 @@
 -dziunia 
-  -shooting frequency and start
+  +shooting frequency and start
   -dying
-  -impact
+  -explosion
   -audio
+  -lives left display
 -ropuch
   -camera react
   -dying
   -bullet sound
   -going through the entire thing to ensure it's doable
+  -lives left display
 -gnilda
   -spawn
   -flipX
   -die audio
+  -lives left display
 -bg
   -platforms alignment
   -limits- fall over == game over
