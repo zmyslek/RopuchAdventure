@@ -19,6 +19,7 @@ public class StartButtonScript : MonoBehaviour
 
     public void buttonClicked(){
         Debug.Log("Start Button Clicked");
+        ScoreState.Reset();
         SceneManager.LoadScene(1);
     }
 }

@@ -25,27 +25,21 @@ public class GryficaRandomSpawner : MonoBehaviour
     [SerializeField]
     float minDistanceFromDziunia = 3.0f;
 
-    [SerializeField]
-    Transform spawnedParent;
-
     GameObject currentGryfica;
     float lastSpawnX;
     bool hasSpawnedBefore;
 
     void Start()
     {
-        if (gryficaPrefab == null)
+        GameObject resourcePrefab = Resources.Load<GameObject>("Prefabs/GryficaMain");
+        if (resourcePrefab != null)
         {
-            GameObject taggedObject = GameObject.FindGameObjectWithTag("GryficaMain");
-            if (taggedObject != null)
-            {
-                gryficaPrefab = taggedObject;
-            }
+            gryficaPrefab = resourcePrefab;
         }
 
         if (gryficaPrefab == null)
         {
-            Debug.LogWarning("GryficaRandomSpawner: No prefab assigned and no object with tag 'GryficaMain' found.");
+            Debug.LogWarning("GryficaRandomSpawner: No prefab assigned and no Resources prefab at 'Prefabs/GryficaMain' found.");
             enabled = false;
             return;
         }
@@ -72,14 +66,23 @@ public class GryficaRandomSpawner : MonoBehaviour
 
     void SpawnOne()
     {
+        // Load prefab fresh each time to avoid caching issues
+        GameObject prefab = Resources.Load<GameObject>("Prefabs/GryficaMain");
+        if (prefab == null)
+        {
+            Debug.LogError("GryficaRandomSpawner: Failed to load 'Prefabs/GryficaMain' from Resources!");
+            return;
+        }
+
         Camera cam = Camera.main;
         float desiredX = float.NaN;
         if (cam != null)
         {
             float camHalfWidth = cam.orthographicSize * cam.aspect;
+            float camLeft = cam.transform.position.x - camHalfWidth;
             float camRight = cam.transform.position.x + camHalfWidth;
             float offset = 0.5f;
-            desiredX = camRight + offset; // always spawn on the right side outside camera
+            desiredX = Random.value < 0.5f ? camLeft - offset : camRight + offset;
         }
 
         Collider2D floorCollider = float.IsNaN(desiredX) ? PickRandomFloorCollider() : FindFloorColliderNearX(desiredX);
@@ -93,7 +96,7 @@ public class GryficaRandomSpawner : MonoBehaviour
                 0.0f
             );
 
-            currentGryfica = Instantiate(gryficaPrefab, fallbackPos, Quaternion.identity, spawnedParent);
+            currentGryfica = Instantiate(prefab, fallbackPos, prefab.transform.rotation);
             lastSpawnX = fallbackPos.x;
             hasSpawnedBefore = true;
             return;
@@ -103,12 +106,14 @@ public class GryficaRandomSpawner : MonoBehaviour
         float floorTopY = floorCollider.bounds.max.y;
 
         Vector3 tempPos = new Vector3(spawnX, floorTopY + 10.0f, 0.0f);
-        GameObject newGryfica = Instantiate(gryficaPrefab, tempPos, Quaternion.identity, spawnedParent);
+        // Instantiate with prefab's original rotation to preserve child positioning
+        GameObject newGryfica = Instantiate(prefab, tempPos, prefab.transform.rotation);
 
-        Collider2D gryficaCollider = newGryfica.GetComponentInChildren<Collider2D>();
-        if (gryficaCollider != null)
+        // Use BoxCollider2D specifically for floor alignment
+        BoxCollider2D boxCollider = newGryfica.GetComponentInChildren<BoxCollider2D>();
+        if (boxCollider != null)
         {
-            float currentBottomY = gryficaCollider.bounds.min.y;
+            float currentBottomY = boxCollider.bounds.min.y;
             float delta = floorTopY - currentBottomY;
             newGryfica.transform.position += new Vector3(0.0f, delta, 0.0f);
         }

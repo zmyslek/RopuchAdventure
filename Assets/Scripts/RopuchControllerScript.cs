@@ -26,6 +26,11 @@ public class RopuchControllerScript : MonoBehaviour
     bool jumpRequested;
     bool isAttacking;
 
+    [SerializeField]
+    float gryfDamageCooldown = 0.75f;
+
+    float nextGryfDamageTime;
+
     int maxJumpCount;
     int jumpsRemaining;
     float jumpDirectionX;
@@ -70,6 +75,7 @@ public class RopuchControllerScript : MonoBehaviour
         nextOuchSoundTime = 0.0f;
 
         isAttacking = false;
+        nextGryfDamageTime = 0.0f;
     }
 
     void Update()
@@ -215,6 +221,11 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.gameObject.CompareTag("Platform"))
+        {
+            ScoreState.AddPoints(1);
+        }
+
         if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             canJump = true;
@@ -236,8 +247,9 @@ public class RopuchControllerScript : MonoBehaviour
         if (collision.gameObject.CompareTag("Gryf"))
         {
             GryficaScript gryfica = collision.GetComponent<GryficaScript>();
-            if (gryfica != null && !gryfica.IsDying)
+            if (gryfica != null && !gryfica.IsDying && Time.time >= nextGryfDamageTime)
             {
+                nextGryfDamageTime = Time.time + Mathf.Max(0.05f, gryfDamageCooldown);
                 LoseLife();
             }
         }
@@ -277,6 +289,7 @@ public class RopuchControllerScript : MonoBehaviour
 
         if (lives <= 0)
         {
+            ScoreState.FinalLives = lives;
             Destroy(gameObject);
             SceneManager.LoadScene(2);
         }

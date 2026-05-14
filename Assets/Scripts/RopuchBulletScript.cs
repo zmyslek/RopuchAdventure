@@ -56,6 +56,7 @@ public class RopuchBulletScript : MonoBehaviour
             if (gryficaScript != null)
             {
                 gryficaScript.decrLifeUnits();
+                ScoreState.AddPoints(2);
             }
 
             DestroyBullet();
@@ -66,6 +67,7 @@ public class RopuchBulletScript : MonoBehaviour
         if (gryficaScriptOnCollision != null)
         {
             gryficaScriptOnCollision.decrLifeUnits();
+            ScoreState.AddPoints(2);
             DestroyBullet();
         }
     }

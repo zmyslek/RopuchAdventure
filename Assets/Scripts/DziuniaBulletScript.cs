@@ -6,7 +6,7 @@ public class DziuniaBulletScript : MonoBehaviour
     float speed = 0.12f;
 
     [SerializeField]
-    float lifetime = 3.0f;
+    float lifetime = 1.5f;
 
     [SerializeField]
     Color bulletColor = new Color(0.72f, 0.32f, 1.0f, 1.0f);
