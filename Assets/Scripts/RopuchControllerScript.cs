@@ -221,11 +221,6 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Platform"))
-        {
-            ScoreState.AddPoints(1);
-        }
-
         if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             canJump = true;

@@ -83,6 +83,7 @@ public class GryficaScript : MonoBehaviour
 
         if (hitsTaken >= maxHits)
         {
+            ScoreState.AddPoints(2);
             StartCoroutine(PlayYeeshAndDie());
             return;
         }

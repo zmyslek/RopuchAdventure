@@ -22,3 +22,6 @@
 -end screen
   -quit button
   -score
+  -camera boundries
+-update readme
+  -https://audio.com/logyne-emad/audio/fairy-lands-fantasy-music-in-a-magical-forest-fantasy-ambience
