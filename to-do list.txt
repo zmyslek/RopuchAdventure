@@ -1,12 +1,9 @@
--dziunia 
-  -shooting frequency and start
-  -audio
+-dziunia
   -lives left display
 -ropuch
   -camera boundries ?
   -going through the entire thing to ensure it's doable
   -lives left display
-  -end portal relationship
 -gnilda
   -perfect spawning
   -lives left display
@@ -15,5 +12,6 @@
   -remove temp platforms
 -end screen
   -quit button
+-animation explosion prefabs loading on top
 -update readme
   -https://audio.com/logyne-emad/audio/fairy-lands-fantasy-music-in-a-magical-forest-fantasy-ambience

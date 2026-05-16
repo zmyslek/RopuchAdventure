@@ -606,6 +606,7 @@ MonoBehaviour:
   deathDelay: 0
   explosionLayer: 0
   explosionSortingOrder: 0
+  deathExplosionAnimationSpeed: 0
   gnildaDeadAudio: {fileID: 0}
 --- !u!1 &205602932
 GameObject:
@@ -4993,7 +4994,7 @@ Transform:
   m_GameObject: {fileID: 1379505503}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 255.58, y: -2.9, z: 0}
+  m_LocalPosition: {x: 269.13, y: -4.25, z: 0}
   m_LocalScale: {x: 1.1, y: 1.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5159,6 +5160,7 @@ MonoBehaviour:
   bullet: {fileID: 4590803671527373689, guid: 42cd798436e6c1c40a7e6572b9ae5487, type: 3}
   deathExplosion: {fileID: 162584487599433031, guid: 39f852c28f9c3fd45a427c24f3564ba7, type: 3}
   deathSequenceDelay: 0.8
+  deathExplosionAnimationSpeed: 0.6
   deathExplosionLayer: 0
   deathExplosionSortingOrder: 0
 --- !u!1001 &1388322798
@@ -8692,13 +8694,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b01395581140dc142821cec07b71b9ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lives: 10
+  lives: 1
   bullet: {fileID: 2431905344048085032, guid: 4bb13e445dbf9014093926a96c209300, type: 3}
   leftGun: {fileID: 524197608}
   rightGun: {fileID: 1664048101}
   shootCooldown: 0.9
   initialShootDelay: 1
   deathDelay: 0.4
+  deathExplosion: {fileID: 162584487599433031, guid: 39f852c28f9c3fd45a427c24f3564ba7, type: 3}
+  deathExplosionAnimationSpeed: 0.6
+  deathExplosionLayer: 0
+  deathExplosionSortingOrder: 0
   dziuniaShowAudio: {fileID: 8300000, guid: fbf9ef62494247f42a25f35b109f2b95, type: 3}
 --- !u!95 &1979973373
 Animator:

@@ -26,8 +26,8 @@ public class DziuniaImpactScript : MonoBehaviour
     {
         explosionLayer = explosionLayer < 0 ? 12 : explosionLayer;
         explosionSortingOrder = explosionSortingOrder <= 0 ? 100 : explosionSortingOrder;
-        impactDelay = impactDelay <= 0.0f ? 0.35f : impactDelay;
-        explosionAnimationSpeed = explosionAnimationSpeed <= 0.0f ? 0.5f : explosionAnimationSpeed;
+        impactDelay = impactDelay <= 0.0f ? 0.8f : impactDelay;
+        explosionAnimationSpeed = explosionAnimationSpeed <= 0.0f ? 0.35f : explosionAnimationSpeed;
 
         isImpacting = false;
     }
@@ -65,17 +65,20 @@ public class DziuniaImpactScript : MonoBehaviour
             return;
         }
 
-        explosion.layer = explosionLayer;
+        explosion.layer = 12;
 
         foreach (Transform child in explosion.transform)
         {
             SetExplosionRenderSettings(child.gameObject);
         }
 
-        SpriteRenderer spriteRenderer = explosion.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
         {
-            spriteRenderer.sortingOrder = explosionSortingOrder;
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sortingOrder = 12;
+            }
         }
     }
 

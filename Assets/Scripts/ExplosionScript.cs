@@ -9,7 +9,7 @@ public class ExplosionScript : MonoBehaviour
 
     void Start()
     {
-        SetSortingOrderRecursively(gameObject, sortingOrder);
+        SetRenderSettingsRecursively(gameObject, sortingOrder);
     }
 
     void explosionFinished()
@@ -17,17 +17,19 @@ public class ExplosionScript : MonoBehaviour
         Destroy(gameObject);
     }
 
-    void SetSortingOrderRecursively(GameObject target, int order)
+    void SetRenderSettingsRecursively(GameObject target, int order)
     {
+        target.layer = 12;
+
         SpriteRenderer spriteRenderer = target.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            spriteRenderer.sortingOrder = order;
+            spriteRenderer.sortingOrder = 12;
         }
 
         foreach (Transform child in target.transform)
         {
-            SetSortingOrderRecursively(child.gameObject, order);
+            SetRenderSettingsRecursively(child.gameObject, order);
         }
     }
 }

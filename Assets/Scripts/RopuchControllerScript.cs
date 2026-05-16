@@ -64,6 +64,8 @@ public class RopuchControllerScript : MonoBehaviour
     GameObject lGun;
     GameObject rGun;
 
+    AudioSource fairyAudioSource;
+
     void Start()
     {
         ar = gameObject.GetComponent<Animator>();
@@ -85,7 +87,7 @@ public class RopuchControllerScript : MonoBehaviour
         maxJumpCount = 2;
         jumpsRemaining = maxJumpCount;
 
-        lives = lives <= 0 ? 3 : lives;
+        lives = lives <= 0 ? 30 : lives;
 
         canJump = false;
         jumpRequested = false;
@@ -96,8 +98,10 @@ public class RopuchControllerScript : MonoBehaviour
         nextGryfDamageTime = 0.0f;
         deathSequenceDelay = deathSequenceDelay <= 0.0f ? 1.4f : deathSequenceDelay;
         deathExplosionAnimationSpeed = deathExplosionAnimationSpeed <= 0.0f ? 0.6f : deathExplosionAnimationSpeed;
-        deathExplosionLayer = deathExplosionLayer < 0 ? 11 : deathExplosionLayer;
+        deathExplosionLayer = deathExplosionLayer < 0 ? 12 : deathExplosionLayer;
         deathExplosionSortingOrder = deathExplosionSortingOrder <= 0 ? 12 : deathExplosionSortingOrder;
+
+        ResolveFairyAudioSource();
     }
 
     void Update()
@@ -394,17 +398,20 @@ public class RopuchControllerScript : MonoBehaviour
             return;
         }
 
-        explosion.layer = deathExplosionLayer;
+        explosion.layer = 12;
 
         foreach (Transform child in explosion.transform)
         {
             SetExplosionRenderSettings(child.gameObject);
         }
 
-        SpriteRenderer spriteRenderer = explosion.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
         {
-            spriteRenderer.sortingOrder = deathExplosionSortingOrder;
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sortingOrder = 12;
+            }
         }
     }
 
@@ -466,5 +473,40 @@ public class RopuchControllerScript : MonoBehaviour
 
         nextOuchSoundTime = Time.time + ouchSoundCooldown;
         AudioSource.PlayClipAtPoint(ouchAudio, transform.position);
+    }
+
+    public void SetFairyAudioMuted(bool muted)
+    {
+        ResolveFairyAudioSource();
+
+        if (fairyAudioSource != null)
+        {
+            fairyAudioSource.mute = muted;
+        }
+    }
+
+    void ResolveFairyAudioSource()
+    {
+        if (fairyAudioSource != null)
+        {
+            return;
+        }
+
+        AudioSource[] sources = GetComponentsInChildren<AudioSource>(true);
+        foreach (AudioSource source in sources)
+        {
+            if (source == null)
+            {
+                continue;
+            }
+
+            string sourceName = source.gameObject.name.ToLowerInvariant();
+            string clipName = source.clip != null ? source.clip.name.ToLowerInvariant() : string.Empty;
+            if (sourceName.Contains("fairy") || clipName.Contains("fairy"))
+            {
+                fairyAudioSource = source;
+                break;
+            }
+        }
     }
 }

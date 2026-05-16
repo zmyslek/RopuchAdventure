@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using TechJuego.LifeSystem;
 public class DziuniaScript : MonoBehaviour
 {
@@ -26,7 +25,23 @@ public class DziuniaScript : MonoBehaviour
     float deathDelay = 0.4f;
 
     [SerializeField]
+    GameObject deathExplosion;
+
+    [SerializeField]
+    float deathExplosionAnimationSpeed = 0.6f;
+
+    [SerializeField]
+    int deathExplosionLayer;
+
+    [SerializeField]
+    int deathExplosionSortingOrder;
+
+    [SerializeField]
     AudioClip dziuniaShowAudio;
+
+    AudioSource dziuniaShowAudioSource;
+
+    Animator animator;
 
     SpriteRenderer sr;
     DziuniaImpactScript impactScript;
@@ -36,6 +51,7 @@ public class DziuniaScript : MonoBehaviour
 
     void Start()
     {
+        animator = gameObject.GetComponent<Animator>();
         sr = gameObject.GetComponent<SpriteRenderer>();
         impactScript = gameObject.GetComponent<DziuniaImpactScript>();
         nextShootTime = Time.time + initialShootDelay;
@@ -43,7 +59,21 @@ public class DziuniaScript : MonoBehaviour
         isDying = false;
 
         lives = lives <= 0 ? 10 : lives;
-        deathDelay = deathDelay <= 0.0f ? 0.9f : deathDelay;
+        deathDelay = deathDelay <= 0.0f ? 1.4f : deathDelay;
+        deathExplosionAnimationSpeed = deathExplosionAnimationSpeed <= 0.0f ? 0.6f : deathExplosionAnimationSpeed;
+        deathExplosionLayer = deathExplosionLayer < 0 ? 12 : deathExplosionLayer;
+        deathExplosionSortingOrder = deathExplosionSortingOrder <= 0 ? 12 : deathExplosionSortingOrder;
+
+        dziuniaShowAudioSource = gameObject.GetComponent<AudioSource>();
+        if (dziuniaShowAudioSource == null)
+        {
+            dziuniaShowAudioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        dziuniaShowAudioSource.playOnAwake = false;
+        dziuniaShowAudioSource.loop = true;
+        dziuniaShowAudioSource.spatialBlend = 0.0f;
+        dziuniaShowAudioSource.volume = 1.0f;
 
         if (leftGun == null)
         {
@@ -91,12 +121,15 @@ public class DziuniaScript : MonoBehaviour
 
         // Play audio with DziuniaShow tag
         PlayDziuniaShowAudio();
+        SetRopuchFairyAudioMuted(true);
         AudioMuteManager.MuteRopuch = true;
     }
 
     private void OnBecameInvisible()
     {
         canShoot = false;
+        StopDziuniaShowAudio();
+        SetRopuchFairyAudioMuted(false);
         AudioMuteManager.MuteRopuch = false;
     }
 
@@ -192,19 +225,103 @@ public class DziuniaScript : MonoBehaviour
 
     IEnumerator PlayDeathSequence()
     {
-        if (impactScript != null)
+        StopDeathAnimation();
+        RotateDeathVisual();
+
+        if (deathExplosion != null)
+        {
+            GameObject explosion = Instantiate(deathExplosion, transform.position, transform.rotation);
+            SetExplosionRenderSettings(explosion);
+            SetExplosionAnimationSpeed(explosion);
+        }
+        else if (impactScript != null)
         {
             impactScript.PlayImpactReaction();
         }
 
-        float waitTime = Mathf.Max(deathDelay, 1.2f);
+        float waitTime = Mathf.Max(deathDelay, 1.4f);
         // wait for the explosion/impact to at least start and be visible
         yield return new WaitForSeconds(waitTime);
 
-        // Count this Dziunia as killed before leaving to end scene
+        // Count this Dziunia as killed 
         ScoreState.AddEnemyKill(1);
+        StopDziuniaShowAudio();
+        SetRopuchFairyAudioMuted(false);
         AudioMuteManager.MuteRopuch = false;
         Destroy(gameObject);
+    }
+
+    void RotateDeathVisual()
+    {
+        if (sr == null)
+        {
+            return;
+        }
+
+        Transform visualTransform = sr.transform;
+        if (visualTransform != transform)
+        {
+            Vector3 euler = visualTransform.eulerAngles;
+            euler.x += 180.0f;
+            visualTransform.eulerAngles = euler;
+            return;
+        }
+
+        sr.flipY = !sr.flipY;
+    }
+
+    void StopDeathAnimation()
+    {
+        if (animator == null)
+        {
+            return;
+        }
+
+        animator.speed = 0.0f;
+        animator.enabled = false;
+    }
+
+    void SetExplosionRenderSettings(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        explosion.layer = 12;
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionRenderSettings(child.gameObject);
+        }
+
+        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sortingOrder = 12;
+            }
+        }
+    }
+
+    void SetExplosionAnimationSpeed(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        Animator animator = explosion.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.speed = deathExplosionAnimationSpeed;
+        }
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionAnimationSpeed(child.gameObject);
+        }
     }
 
     void PlayDziuniaShowAudio()
@@ -214,6 +331,34 @@ public class DziuniaScript : MonoBehaviour
             return;
         }
 
-        AudioSource.PlayClipAtPoint(dziuniaShowAudio, transform.position);
+        if (dziuniaShowAudioSource == null)
+        {
+            return;
+        }
+
+        dziuniaShowAudioSource.clip = dziuniaShowAudio;
+        dziuniaShowAudioSource.loop = true;
+
+        if (!dziuniaShowAudioSource.isPlaying)
+        {
+            dziuniaShowAudioSource.Play();
+        }
+    }
+
+    void StopDziuniaShowAudio()
+    {
+        if (dziuniaShowAudioSource != null && dziuniaShowAudioSource.isPlaying)
+        {
+            dziuniaShowAudioSource.Stop();
+        }
+    }
+
+    void SetRopuchFairyAudioMuted(bool muted)
+    {
+        RopuchControllerScript ropuch = FindObjectOfType<RopuchControllerScript>();
+        if (ropuch != null)
+        {
+            ropuch.SetFairyAudioMuted(muted);
+        }
     }
 }

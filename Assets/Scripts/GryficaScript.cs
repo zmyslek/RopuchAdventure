@@ -237,17 +237,20 @@ public class GryficaScript : MonoBehaviour
             return;
         }
 
-        explosion.layer = explosionLayer;
+        explosion.layer = 12;
 
         foreach (Transform child in explosion.transform)
         {
             SetExplosionRenderSettings(child.gameObject);
         }
 
-        SpriteRenderer spriteRenderer = explosion.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
         {
-            spriteRenderer.sortingOrder = explosionSortingOrder;
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sortingOrder = 12;
+            }
         }
     }
 
