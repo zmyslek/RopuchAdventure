@@ -7,6 +7,7 @@ namespace TechJuego.LifeSystem
         public Button m_AddLife;
         public Button m_LooseLife;
         public Button m_RefillAllLife;
+        public string ProfileId = "Ropuch";
         private void OnEnable()
         {
             m_AddLife.onClick.RemoveAllListeners();
@@ -20,15 +21,18 @@ namespace TechJuego.LifeSystem
         }
         void OnClickAddLife()
         {
-            LifeHandler.Instance.AddLife();
+            if (LifeHandler.Instance != null)
+                LifeHandler.Instance.AddLife(ProfileId);
         }
         void OnClickLooseLife()
         {
-            LifeHandler.Instance.LooseLife();
+            if (LifeHandler.Instance != null)
+                LifeHandler.Instance.LooseLife(ProfileId);
         }
         void OnClickRefillAllLife()
         {
-            LifeHandler.Instance.RefillLife();
+            if (LifeHandler.Instance != null)
+                LifeHandler.Instance.RefillLife(ProfileId);
         }
     }
 }

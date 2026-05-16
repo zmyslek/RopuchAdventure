@@ -1,22 +1,33 @@
 using System;
 using UnityEngine;
+using System.Linq;
+
 namespace TechJuego.LifeSystem
 {
-    //Events to get update of current life count and remaining time
+    //Events to get update of current life count and remaining time for a profile
     public class LifeEvents
     {
-        public delegate void OnUpdateLife(int lifecount, string remainingTime);
+        public delegate void OnUpdateLife(string profileId, int lifecount, string remainingTime);
         public static OnUpdateLife OnGetLifeDetail;
     }
+
+    [System.Serializable]
+    public class ProfileSetting
+    {
+        public string ProfileId = "";
+        public int MaxLifeCount = 3;
+        public int TimeToAddLifeInSeconds = 60;
+    }
+
     public class LifeHandler : MonoBehaviour
     {
         public static LifeHandler Instance;
         private readonly string lifeHolder = "LIFE";
         private LifeData lifeData = new LifeData();
-        [Header("Max no of life")]
-        [SerializeField] private int MaxLifeCount;
-        [Header("Time in seconds")]
-        [SerializeField] private int TimeToAddLifeInSeconds;
+
+        [Header("Profile settings (configure one per character)")]
+        [SerializeField] private ProfileSetting[] Profiles = new ProfileSetting[0];
+
         private void Awake()
         {
             if (Instance == null)
@@ -27,65 +38,117 @@ namespace TechJuego.LifeSystem
             else if (Instance != this)
             {
                 Destroy(gameObject);
+                return;
             }
+
             if (PlayerPrefs.HasKey(lifeHolder))
             {
-                lifeData = JsonUtility.FromJson<LifeData>(PlayerPrefs.GetString(lifeHolder));
-            }
-            else
-            {
-                lifeData.lifedata.CurrentLifeCount = MaxLifeCount;
-                PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
-            }
-            CheckLife();
-        }
-        //function to reduce life count and check it don't go below 0
-        public void LooseLife()
-        {
-            if (lifeData.lifedata.CurrentLifeCount > 0)
-            {
-                lifeData.lifedata.CurrentLifeCount -= 1;
-                PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
-                SetTimeToAddNextLife();
-            }
-        }
-        //function to add life count and check it don't go above max count
-        public void AddLife()
-        {
-            if (lifeData.lifedata.CurrentLifeCount < MaxLifeCount)
-            {
-                lifeData.lifedata.CurrentLifeCount += 1;
-                PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
-            }
-        }
-        //Refill all lifes
-        public void RefillLife()
-        {
-            lifeData.lifedata.CurrentLifeCount = MaxLifeCount;
-            lifeData.lifedata.AddedNextTime = new System.Collections.Generic.List<string>();
-            PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
-        }
-        // update remaining time
-        private void Update()
-        {
-            if (lifeData.lifedata.CurrentLifeCount < MaxLifeCount)
-            {
-                if (lifeData.lifedata.AddedNextTime.Count > 0)
+                try
                 {
-                    TimeSpan span = DateTime.Parse(lifeData.lifedata.AddedNextTime[0]) - DateTime.Now;
-                    LifeEvents.OnGetLifeDetail?.Invoke(lifeData.lifedata.CurrentLifeCount, GetRemainingTime(span));
-                    if (span.TotalSeconds < 0)
-                    {
-                        lifeData.lifedata.AddedNextTime.RemoveAt(0);
-                        AddLife();
-                    }
+                    lifeData = JsonUtility.FromJson<LifeData>(PlayerPrefs.GetString(lifeHolder));
+                }
+                catch
+                {
+                    lifeData = new LifeData();
                 }
             }
-            else
+
+            // Ensure each configured profile exists in saved data
+            foreach (var p in Profiles)
             {
-                LifeEvents.OnGetLifeDetail?.Invoke(lifeData.lifedata.CurrentLifeCount, "Full");
+                if (string.IsNullOrEmpty(p.ProfileId))
+                    continue;
+
+                var entry = lifeData.profiles.FirstOrDefault(x => x.ProfileId == p.ProfileId);
+                if (entry == null)
+                {
+                    entry = new ProfileEntry() { ProfileId = p.ProfileId, CurrentLifeCount = p.MaxLifeCount };
+                    lifeData.profiles.Add(entry);
+                }
+                else
+                {
+                    // clamp saved value to configured max
+                    entry.CurrentLifeCount = Math.Min(entry.CurrentLifeCount, p.MaxLifeCount);
+                }
+            }
+
+            PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
+            CheckLife();
+        }
+
+        // reduce life for a specific profile
+        public void LooseLife(string profileId)
+        {
+            var entry = GetProfileEntry(profileId);
+            var setting = GetProfileSetting(profileId);
+            if (entry == null || setting == null)
+                return;
+
+            if (entry.CurrentLifeCount > 0)
+            {
+                entry.CurrentLifeCount -= 1;
+                PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
+                SetTimeToAddNextLife(profileId);
             }
         }
+
+        // add life for profile
+        public void AddLife(string profileId)
+        {
+            var entry = GetProfileEntry(profileId);
+            var setting = GetProfileSetting(profileId);
+            if (entry == null || setting == null)
+                return;
+
+            if (entry.CurrentLifeCount < setting.MaxLifeCount)
+            {
+                entry.CurrentLifeCount += 1;
+                PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
+            }
+        }
+
+        // refill all lives for a profile
+        public void RefillLife(string profileId)
+        {
+            var entry = GetProfileEntry(profileId);
+            var setting = GetProfileSetting(profileId);
+            if (entry == null || setting == null)
+                return;
+
+            entry.CurrentLifeCount = setting.MaxLifeCount;
+            entry.AddedNextTime = new System.Collections.Generic.List<string>();
+            PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
+        }
+
+        // update remaining time per-profile
+        private void Update()
+        {
+            foreach (var entry in lifeData.profiles)
+            {
+                var setting = GetProfileSetting(entry.ProfileId);
+                if (setting == null)
+                    continue;
+
+                if (entry.CurrentLifeCount < setting.MaxLifeCount)
+                {
+                    if (entry.AddedNextTime.Count > 0)
+                    {
+                        TimeSpan span = DateTime.Parse(entry.AddedNextTime[0]) - DateTime.Now;
+                        LifeEvents.OnGetLifeDetail?.Invoke(entry.ProfileId, entry.CurrentLifeCount, GetRemainingTime(span));
+                        if (span.TotalSeconds < 0)
+                        {
+                            entry.AddedNextTime.RemoveAt(0);
+                            AddLife(entry.ProfileId);
+                        }
+                    }
+                }
+                else
+                {
+                    LifeEvents.OnGetLifeDetail?.Invoke(entry.ProfileId, entry.CurrentLifeCount, "Full");
+                }
+            }
+        }
+
         // get time in string format to show
         private string GetRemainingTime(TimeSpan timeSpan)
         {
@@ -100,42 +163,70 @@ namespace TechJuego.LifeSystem
             }
             return time;
         }
-        //function to check is if we have max life
-        private bool IsLifeIsFull()
+
+        // check before can play
+        public bool CanPlay(string profileId)
         {
-            return lifeData.lifedata.CurrentLifeCount >= MaxLifeCount;
+            var entry = GetProfileEntry(profileId);
+            return entry != null && entry.CurrentLifeCount > 0;
         }
-        //function to check before can we play
-        public bool CanPlay()
+
+        // helper: set time to add next life for a profile
+        void SetTimeToAddNextLife(string profileId)
         {
-            return lifeData.lifedata.CurrentLifeCount > 0;
-        }
-        //function to set time to add next life
-        void SetTimeToAddNextLife()
-        {
-            var seconds = TimeToAddLifeInSeconds;
-            if (lifeData.lifedata.AddedNextTime.Count > 0)
+            var entry = GetProfileEntry(profileId);
+            var setting = GetProfileSetting(profileId);
+            if (entry == null || setting == null)
+                return;
+
+            var seconds = setting.TimeToAddLifeInSeconds;
+            if (entry.AddedNextTime.Count > 0)
             {
-                string times = lifeData.lifedata.AddedNextTime[lifeData.lifedata.AddedNextTime.Count - 1];
+                string times = entry.AddedNextTime[entry.AddedNextTime.Count - 1];
                 DateTime nextTime = DateTime.Parse(times).AddSeconds(seconds);
-                lifeData.lifedata.AddedNextTime.Add(nextTime.ToString());
+                entry.AddedNextTime.Add(nextTime.ToString());
             }
             else
             {
                 DateTime nextTime = DateTime.Now.AddSeconds(seconds);
-                lifeData.lifedata.AddedNextTime.Add(nextTime.ToString());
+                entry.AddedNextTime.Add(nextTime.ToString());
             }
             PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
         }
-        //function to check on start 
+
+        // function to check on start
         void CheckLife()
         {
-            if (lifeData.lifedata.AddedNextTime.Count > 0)
+            foreach (var entry in lifeData.profiles)
             {
-                string times = lifeData.lifedata.AddedNextTime[lifeData.lifedata.AddedNextTime.Count - 1];
-                TimeSpan span = DateTime.Parse(times) - DateTime.Now;
-                LifeEvents.OnGetLifeDetail?.Invoke(lifeData.lifedata.CurrentLifeCount, GetRemainingTime(span));
+                if (entry.AddedNextTime.Count > 0)
+                {
+                    string times = entry.AddedNextTime[entry.AddedNextTime.Count - 1];
+                    TimeSpan span = DateTime.Parse(times) - DateTime.Now;
+                    LifeEvents.OnGetLifeDetail?.Invoke(entry.ProfileId, entry.CurrentLifeCount, GetRemainingTime(span));
+                }
             }
+        }
+
+        ProfileEntry GetProfileEntry(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return null;
+            return lifeData.profiles.FirstOrDefault(x => x.ProfileId == id);
+        }
+
+        ProfileSetting GetProfileSetting(string id)
+        {
+            if (Profiles == null)
+                return null;
+            return Profiles.FirstOrDefault(x => x.ProfileId == id);
+        }
+
+        // public getter
+        public int GetCurrentLifeCount(string id)
+        {
+            var e = GetProfileEntry(id);
+            return e == null ? 0 : e.CurrentLifeCount;
         }
     }
 }

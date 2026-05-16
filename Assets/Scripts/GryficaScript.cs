@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TechJuego.LifeSystem;
 
 public class GryficaScript : MonoBehaviour
 {
@@ -33,6 +34,7 @@ public class GryficaScript : MonoBehaviour
 
     bool isAttacking;
     bool isDying;
+    bool isFacingLeft;
 
     float attackClipLength;
 
@@ -55,12 +57,25 @@ public class GryficaScript : MonoBehaviour
 
         isAttacking = false;
         isDying = false;
+        isFacingLeft = transform.localScale.x < 0.0f;
         hitsTaken = 0;
 
         attackClipLength = GetAnimationClipLength("Gryfica-attack");
 
         ar.SetInteger("State", 0);
         ar.speed = 1.0f;
+
+        if (sr != null)
+        {
+            sr.flipX = false;
+        }
+
+        // initialize local life display when LifeHandler isn't present
+        var disp = GetComponentInChildren<EnemyLifeDisplay>();
+        if (disp != null && LifeHandler.Instance == null)
+        {
+            disp.UpdateLocal(maxHits);
+        }
     }
 
     void Update()
@@ -79,11 +94,33 @@ public class GryficaScript : MonoBehaviour
             return;
         }
 
+        // If LifeHandler present, use per-profile lives for Gryfica
+        if (LifeHandler.Instance != null)
+        {
+            LifeHandler.Instance.LooseLife("Gryfica");
+            int remainingProfile = LifeHandler.Instance.GetCurrentLifeCount("Gryfica");
+            if (remainingProfile <= 0)
+            {
+                ScoreState.AddEnemyKill(1);
+                StartCoroutine(PlayYeeshAndDie());
+                return;
+            }
+
+            StartCoroutine(PlayAttackOnly());
+            return;
+        }
+
+        // fallback to local hit-count logic
         hitsTaken++;
+
+        int remaining = Mathf.Max(0, maxHits - hitsTaken);
+        var dispLocal = GetComponentInChildren<EnemyLifeDisplay>();
+        if (dispLocal != null)
+            dispLocal.UpdateLocal(remaining);
 
         if (hitsTaken >= maxHits)
         {
-            ScoreState.AddPoints(2);
+            ScoreState.AddEnemyKill(1);
             StartCoroutine(PlayYeeshAndDie());
             return;
         }
@@ -102,7 +139,7 @@ public class GryficaScript : MonoBehaviour
         var player = FindObjectOfType<RopuchControllerScript>();
         if (player != null && sr != null)
         {
-            sr.flipX = player.transform.position.x < transform.position.x;
+            SetFacingLeft(player.transform.position.x < transform.position.x);
         }
 
         isAttacking = true;
@@ -142,7 +179,7 @@ public class GryficaScript : MonoBehaviour
 
         yield return new WaitForSeconds(deathDelay);
 
-        Destroy(gameObject);
+        Destroy(transform.root.gameObject);
     }
 
     float GetAnimationClipLength(string clipName)
@@ -167,6 +204,25 @@ public class GryficaScript : MonoBehaviour
     Vector3 GetGryfCenterPosition()
     {
         return transform.position;
+    }
+
+    void SetFacingLeft(bool faceLeft)
+    {
+        if (isFacingLeft == faceLeft)
+        {
+            return;
+        }
+
+        isFacingLeft = faceLeft;
+
+        Vector3 scale = transform.localScale;
+        scale.x = Mathf.Abs(scale.x) * (faceLeft ? -1.0f : 1.0f);
+        transform.localScale = scale;
+
+        if (sr != null)
+        {
+            sr.flipX = false;
+        }
     }
 
     void SetExplosionRenderSettings(GameObject explosion)

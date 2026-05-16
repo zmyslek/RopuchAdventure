@@ -1,27 +1,22 @@
 -dziunia 
-  +shooting frequency and start
+  -shooting frequency and start
   -dying
   -explosion
   -audio
   -lives left display
 -ropuch
-  -camera react
-  -dying
-  -bullet sound
+  -camera boundries ?
+  -dying- explosion (same as for gryfica), flip 180 x-axis, end scene
   -going through the entire thing to ensure it's doable
   -lives left display
+  -end portal relationship
 -gnilda
-  -spawn
   -flipX
-  -die audio
   -lives left display
 -bg
-  -platforms alignment
   -limits- fall over == game over
   -remove temp platforms
 -end screen
   -quit button
-  -score
-  -camera boundries
 -update readme
   -https://audio.com/logyne-emad/audio/fairy-lands-fantasy-music-in-a-magical-forest-fantasy-ambience

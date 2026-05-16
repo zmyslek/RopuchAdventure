@@ -1,18 +1,19 @@
 using System.Collections.Generic;
 
-//Classes to Stote current life progress and time to add next life
+//Classes to store current life progress and time to add next life per profile
 namespace TechJuego.LifeSystem
 {
     [System.Serializable]
-    public class AddTimeClass
+    public class ProfileEntry
     {
+        public string ProfileId;
         public int CurrentLifeCount;
         public List<string> AddedNextTime = new List<string>();
     }
+
     [System.Serializable]
     public class LifeData
     {
-        public AddTimeClass lifedata = new AddTimeClass();
+        public List<ProfileEntry> profiles = new List<ProfileEntry>();
     }
-
 }

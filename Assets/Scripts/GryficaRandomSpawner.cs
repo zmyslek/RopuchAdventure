@@ -119,11 +119,9 @@ public class GryficaRandomSpawner : MonoBehaviour
         }
 
         // Ensure spawned Gryfica faces left (walking direction towards player/camera)
-        SpriteRenderer s = newGryfica.GetComponentInChildren<SpriteRenderer>();
-        if (s != null)
-        {
-            s.flipX = true; // face left
-        }
+        Vector3 scale = newGryfica.transform.localScale;
+        scale.x = -Mathf.Abs(scale.x);
+        newGryfica.transform.localScale = scale;
 
         currentGryfica = newGryfica;
         lastSpawnX = currentGryfica.transform.position.x;

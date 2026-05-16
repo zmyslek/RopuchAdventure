@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TechJuego.LifeSystem;
 public class DziuniaScript : MonoBehaviour
 {
     [SerializeField]
@@ -60,6 +61,13 @@ public class DziuniaScript : MonoBehaviour
             {
                 rightGun = rightGunObject.transform;
             }
+        }
+
+        // initialize local life display when LifeHandler isn't present yet
+        var disp = GetComponentInChildren<EnemyLifeDisplay>();
+        if (disp != null && LifeHandler.Instance == null)
+        {
+            disp.UpdateLocal(lives);
         }
     }
 
@@ -138,12 +146,40 @@ public class DziuniaScript : MonoBehaviour
 
     public void TakeHit()
     {
-        if (lives <= 0 || isDying)
+        if (isDying)
         {
             return;
         }
 
+        // If LifeHandler profile exists, use it as source of truth
+        if (LifeHandler.Instance != null)
+        {
+            LifeHandler.Instance.LooseLife("Dziunia");
+            int remaining = LifeHandler.Instance.GetCurrentLifeCount("Dziunia");
+            if (remaining <= 0)
+            {
+                isDying = true;
+                canShoot = false;
+                StartCoroutine(PlayDeathSequence());
+                return;
+            }
+
+            if (impactScript != null)
+            {
+                impactScript.PlayImpactReaction();
+            }
+
+            return;
+        }
+
+        // fallback to local lives
+        if (lives <= 0)
+            return;
+
         lives--;
+        var disp2 = GetComponentInChildren<EnemyLifeDisplay>();
+        if (disp2 != null)
+            disp2.UpdateLocal(lives);
 
         if (lives <= 0)
         {
@@ -153,7 +189,6 @@ public class DziuniaScript : MonoBehaviour
             return;
         }
 
-        // Play impact reaction - all bullets cause a reaction
         if (impactScript != null)
         {
             impactScript.PlayImpactReaction();
@@ -169,6 +204,8 @@ public class DziuniaScript : MonoBehaviour
 
         yield return new WaitForSeconds(deathDelay);
 
+        // Count this Dziunia as killed before leaving to end scene
+        ScoreState.AddEnemyKill(1);
         SceneManager.LoadScene(2);
     }
 

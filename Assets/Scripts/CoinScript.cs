@@ -20,7 +20,7 @@ public class CoinScript : MonoBehaviour
         }
 
         isCollected = true;
-        ScoreState.AddPoints(coinValue);
+        ScoreState.AddCoin(coinValue);
         Destroy(gameObject);
     }
 }

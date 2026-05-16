@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TechJuego.LifeSystem;
 
 public class RopuchControllerScript : MonoBehaviour
 {
@@ -278,10 +279,22 @@ public class RopuchControllerScript : MonoBehaviour
 
     public void LoseLife()
     {
-        lives--;
-
         PlayOuchSound();
 
+        if (LifeHandler.Instance != null)
+        {
+            LifeHandler.Instance.LooseLife("Ropuch");
+            if (!LifeHandler.Instance.CanPlay("Ropuch"))
+            {
+                ScoreState.FinalLives = 0;
+                Destroy(gameObject);
+                SceneManager.LoadScene(2);
+            }
+            return;
+        }
+
+        // fallback to local lives if LifeHandler not present
+        lives--;
         if (lives <= 0)
         {
             ScoreState.FinalLives = lives;

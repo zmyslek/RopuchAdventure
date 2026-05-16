@@ -18,7 +18,7 @@ public class EndScoreDisplayScript : MonoBehaviour
 
         if (endScoreText != null)
         {
-            endScoreText.text = "Points: " + ScoreState.CurrentScore.ToString("000");
+            endScoreText.text = "Points: " + ScoreState.CoinsCollected.ToString() + "\nEnemies killed: " + ScoreState.EnemiesKilled.ToString();
         }
 
         if (statusText != null)
