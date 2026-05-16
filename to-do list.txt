@@ -11,7 +11,7 @@
   -lives left display
   -end portal relationship
 -gnilda
-  -flipX
+  -perfect spawning
   -lives left display
 -bg
   -limits- fall over == game over

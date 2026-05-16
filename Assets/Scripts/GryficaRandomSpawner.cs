@@ -88,7 +88,7 @@ public class GryficaRandomSpawner : MonoBehaviour
         Collider2D floorCollider = float.IsNaN(desiredX) ? PickRandomFloorCollider() : FindFloorColliderNearX(desiredX);
         if (floorCollider == null)
         {
-            Debug.LogWarning("GryficaRandomSpawner: No object with tag 'Floor' found. Using raw random area spawn.");
+            Debug.LogWarning("GryficaRandomSpawner: No Floor-tagged object with a Collider2D found. Using raw random area spawn.");
 
             Vector3 fallbackPos = new Vector3(
                 Random.Range(Mathf.Min(spawnAreaMin.x, spawnAreaMax.x), Mathf.Max(spawnAreaMin.x, spawnAreaMax.x)),
