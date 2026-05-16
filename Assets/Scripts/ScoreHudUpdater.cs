@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,8 +10,8 @@ public class ScoreHudUpdater : MonoBehaviour
     [SerializeField]
     Text enemiesText;
 
-    [SerializeField]
-    bool includeLabels = true;
+    string coinsTemplate;
+    string enemiesTemplate;
 
     void Start()
     {
@@ -28,12 +29,14 @@ public class ScoreHudUpdater : MonoBehaviour
         // initialize values
         if (coinsText != null)
         {
-            coinsText.text = includeLabels ? ("Points: " + ScoreState.CoinsCollected.ToString()) : ScoreState.CoinsCollected.ToString();
+            coinsTemplate = coinsText.text;
+            coinsText.text = FormatCount(coinsTemplate, ScoreState.CoinsCollected);
         }
 
         if (enemiesText != null)
         {
-            enemiesText.text = includeLabels ? ("Enemies killed: " + ScoreState.EnemiesKilled.ToString()) : ScoreState.EnemiesKilled.ToString();
+            enemiesTemplate = enemiesText.text;
+            enemiesText.text = FormatCount(enemiesTemplate, ScoreState.EnemiesKilled);
         }
     }
     void OnEnable()
@@ -51,12 +54,28 @@ public class ScoreHudUpdater : MonoBehaviour
     void HandleCoinsChanged(int newCount)
     {
         if (coinsText == null) return;
-        coinsText.text = includeLabels ? ("Points: " + newCount.ToString()) : newCount.ToString();
+        coinsText.text = FormatCount(coinsTemplate, newCount);
     }
 
     void HandleEnemiesChanged(int newCount)
     {
         if (enemiesText == null) return;
-        enemiesText.text = includeLabels ? ("Enemies killed: " + newCount.ToString()) : newCount.ToString();
+        enemiesText.text = FormatCount(enemiesTemplate, newCount);
+    }
+
+    string FormatCount(string template, int value)
+    {
+        if (string.IsNullOrEmpty(template))
+        {
+            return value.ToString();
+        }
+
+        Match match = Regex.Match(template, "\\d+");
+        if (!match.Success)
+        {
+            return template;
+        }
+
+        return template.Substring(0, match.Index) + value.ToString() + template.Substring(match.Index + match.Length);
     }
 }

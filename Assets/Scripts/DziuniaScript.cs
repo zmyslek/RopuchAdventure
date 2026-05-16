@@ -202,11 +202,13 @@ public class DziuniaScript : MonoBehaviour
             impactScript.PlayImpactReaction();
         }
 
-        yield return new WaitForSeconds(deathDelay);
+        float waitTime = Mathf.Max(deathDelay, 0.6f);
+        // wait for the explosion/impact to at least start and be visible
+        yield return new WaitForSeconds(waitTime);
 
         // Count this Dziunia as killed before leaving to end scene
         ScoreState.AddEnemyKill(1);
-        SceneManager.LoadScene(2);
+        Destroy(gameObject);
     }
 
     void PlayDziuniaShowAudio()

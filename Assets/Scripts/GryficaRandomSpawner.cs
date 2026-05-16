@@ -25,6 +25,9 @@ public class GryficaRandomSpawner : MonoBehaviour
     [SerializeField]
     float minDistanceFromDziunia = 3.0f;
 
+    [SerializeField]
+    float floorEdgePadding = 0.75f;
+
     GameObject currentGryfica;
     float lastSpawnX;
     bool hasSpawnedBefore;
@@ -109,19 +112,16 @@ public class GryficaRandomSpawner : MonoBehaviour
         // Instantiate with prefab's original rotation to preserve child positioning
         GameObject newGryfica = Instantiate(prefab, tempPos, prefab.transform.rotation);
 
-        // Use BoxCollider2D specifically for floor alignment
-        BoxCollider2D boxCollider = newGryfica.GetComponentInChildren<BoxCollider2D>();
-        if (boxCollider != null)
-        {
-            float currentBottomY = boxCollider.bounds.min.y;
-            float delta = floorTopY - currentBottomY;
-            newGryfica.transform.position += new Vector3(0.0f, delta, 0.0f);
-        }
-
         // Ensure spawned Gryfica faces left (walking direction towards player/camera)
         Vector3 scale = newGryfica.transform.localScale;
         scale.x = -Mathf.Abs(scale.x);
         newGryfica.transform.localScale = scale;
+
+        BoxCollider2D boxCollider = newGryfica.GetComponentInChildren<BoxCollider2D>();
+        if (boxCollider != null)
+        {
+            FitGryficaToFloor(newGryfica, boxCollider, floorCollider);
+        }
 
         currentGryfica = newGryfica;
         lastSpawnX = currentGryfica.transform.position.x;
@@ -263,6 +263,42 @@ public class GryficaRandomSpawner : MonoBehaviour
         }
 
         return Random.Range(clampedMin, clampedMax);
+    }
+
+    void FitGryficaToFloor(GameObject gryfica, BoxCollider2D gryficaCollider, Collider2D floorCollider)
+    {
+        if (gryfica == null || gryficaCollider == null || floorCollider == null)
+        {
+            return;
+        }
+
+        Bounds floorBounds = floorCollider.bounds;
+        Bounds gryfBounds = gryficaCollider.bounds;
+
+        float targetBottomY = floorBounds.max.y;
+        float deltaY = targetBottomY - gryfBounds.min.y;
+
+        float availableMinX = floorBounds.min.x + floorEdgePadding;
+        float availableMaxX = floorBounds.max.x - floorEdgePadding;
+
+        float width = gryfBounds.size.x;
+        float centeredX = Mathf.Clamp(gryfica.transform.position.x, availableMinX, availableMaxX);
+        float deltaX = centeredX - gryfica.transform.position.x;
+
+        if (availableMaxX - availableMinX >= width)
+        {
+            float leftLimit = availableMinX + width * 0.5f;
+            float rightLimit = availableMaxX - width * 0.5f;
+            float desiredCenterX = Mathf.Clamp(gryfBounds.center.x, leftLimit, rightLimit);
+            deltaX = desiredCenterX - gryfBounds.center.x;
+        }
+        else
+        {
+            float floorCenterX = floorBounds.center.x;
+            deltaX = floorCenterX - gryfBounds.center.x;
+        }
+
+        gryfica.transform.position += new Vector3(deltaX, deltaY, 0.0f);
     }
 
     void OnDrawGizmosSelected()

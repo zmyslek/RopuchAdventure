@@ -17,6 +17,8 @@ public class DziuniaImpactScript : MonoBehaviour
 
     bool isImpacting;
 
+    public bool IsImpacting { get { return isImpacting; } }
+
     void Start()
     {
         explosionLayer = explosionLayer < 0 ? 11 : explosionLayer;
@@ -41,6 +43,7 @@ public class DziuniaImpactScript : MonoBehaviour
         {
             Vector3 explosionPos = transform.position;
             GameObject explosion = Instantiate(dziuniaExplosion, explosionPos, transform.rotation);
+            DontDestroyOnLoad(explosion);
             SetExplosionRenderSettings(explosion);
         }
 

@@ -222,6 +222,14 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.gameObject.CompareTag("Portal"))
+        {
+            Debug.Log("Portal triggered: setting final lives and loading end scene. FinalLives before=" + ScoreState.FinalLives);
+            ScoreState.FinalLives = Mathf.Max(1, ScoreState.FinalLives);
+            SceneManager.LoadScene(2);
+            return;
+        }
+
         if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             canJump = true;
