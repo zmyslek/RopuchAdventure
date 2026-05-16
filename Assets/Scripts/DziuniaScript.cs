@@ -43,7 +43,7 @@ public class DziuniaScript : MonoBehaviour
         isDying = false;
 
         lives = lives <= 0 ? 10 : lives;
-        deathDelay = deathDelay <= 0.0f ? 0.4f : deathDelay;
+        deathDelay = deathDelay <= 0.0f ? 0.9f : deathDelay;
 
         if (leftGun == null)
         {
@@ -91,11 +91,13 @@ public class DziuniaScript : MonoBehaviour
 
         // Play audio with DziuniaShow tag
         PlayDziuniaShowAudio();
+        AudioMuteManager.MuteRopuch = true;
     }
 
     private void OnBecameInvisible()
     {
         canShoot = false;
+        AudioMuteManager.MuteRopuch = false;
     }
 
     public void ShootBullet()
@@ -126,13 +128,6 @@ public class DziuniaScript : MonoBehaviour
     {
         if (isDying)
         {
-            return;
-        }
-
-        // Check if hit by Ropuch's bullet
-        if (collision.gameObject.GetComponent<RopuchBulletScript>() != null)
-        {
-            TakeHit();
             return;
         }
 
@@ -202,12 +197,13 @@ public class DziuniaScript : MonoBehaviour
             impactScript.PlayImpactReaction();
         }
 
-        float waitTime = Mathf.Max(deathDelay, 0.6f);
+        float waitTime = Mathf.Max(deathDelay, 1.2f);
         // wait for the explosion/impact to at least start and be visible
         yield return new WaitForSeconds(waitTime);
 
         // Count this Dziunia as killed before leaving to end scene
         ScoreState.AddEnemyKill(1);
+        AudioMuteManager.MuteRopuch = false;
         Destroy(gameObject);
     }
 

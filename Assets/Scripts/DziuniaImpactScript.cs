@@ -15,14 +15,19 @@ public class DziuniaImpactScript : MonoBehaviour
     [SerializeField]
     int explosionSortingOrder;
 
+    [SerializeField]
+    float explosionAnimationSpeed;
+
     bool isImpacting;
 
     public bool IsImpacting { get { return isImpacting; } }
 
     void Start()
     {
-        explosionLayer = explosionLayer < 0 ? 11 : explosionLayer;
-        explosionSortingOrder = explosionSortingOrder <= 0 ? 12 : explosionSortingOrder;
+        explosionLayer = explosionLayer < 0 ? 12 : explosionLayer;
+        explosionSortingOrder = explosionSortingOrder <= 0 ? 100 : explosionSortingOrder;
+        impactDelay = impactDelay <= 0.0f ? 0.35f : impactDelay;
+        explosionAnimationSpeed = explosionAnimationSpeed <= 0.0f ? 0.5f : explosionAnimationSpeed;
 
         isImpacting = false;
     }
@@ -45,6 +50,7 @@ public class DziuniaImpactScript : MonoBehaviour
             GameObject explosion = Instantiate(dziuniaExplosion, explosionPos, transform.rotation);
             DontDestroyOnLoad(explosion);
             SetExplosionRenderSettings(explosion);
+            SetExplosionAnimationSpeed(explosion);
         }
 
         yield return new WaitForSeconds(impactDelay);
@@ -70,6 +76,25 @@ public class DziuniaImpactScript : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.sortingOrder = explosionSortingOrder;
+        }
+    }
+
+    void SetExplosionAnimationSpeed(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        Animator animator = explosion.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.speed = explosionAnimationSpeed;
+        }
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionAnimationSpeed(child.gameObject);
         }
     }
 }

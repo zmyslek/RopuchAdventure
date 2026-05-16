@@ -27,6 +27,9 @@ public class GryficaScript : MonoBehaviour
     int explosionSortingOrder;
 
     [SerializeField]
+    float deathExplosionAnimationSpeed;
+
+    [SerializeField]
     AudioClip gnildaDeadAudio;
 
     int maxHits;
@@ -50,8 +53,9 @@ public class GryficaScript : MonoBehaviour
 
         maxHits = 3;
         yeeshTime = yeeshTime <= 0.0f ? 0.6f : yeeshTime;
-        yeeshAnimationSpeed = yeeshAnimationSpeed <= 0.0f ? 1.0f : yeeshAnimationSpeed;
-        deathDelay = deathDelay <= 0.0f ? 0.2f : deathDelay;
+        yeeshAnimationSpeed = yeeshAnimationSpeed <= 0.0f ? 0.65f : yeeshAnimationSpeed;
+        deathDelay = deathDelay <= 0.0f ? 0.6f : deathDelay;
+        deathExplosionAnimationSpeed = deathExplosionAnimationSpeed <= 0.0f ? 0.6f : deathExplosionAnimationSpeed;
         explosionLayer = explosionLayer < 0 ? 11 : explosionLayer;
         explosionSortingOrder = explosionSortingOrder <= 0 ? 12 : explosionSortingOrder;
 
@@ -170,6 +174,7 @@ public class GryficaScript : MonoBehaviour
             Vector3 explosionPos = GetGryfCenterPosition();
             GameObject explosion = Instantiate(gryficaExplosion, explosionPos, transform.rotation);
             SetExplosionRenderSettings(explosion);
+            SetExplosionAnimationSpeed(explosion);
         }
 
         PlayGnildaDeadAudio();
@@ -243,6 +248,25 @@ public class GryficaScript : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.sortingOrder = explosionSortingOrder;
+        }
+    }
+
+    void SetExplosionAnimationSpeed(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        Animator animator = explosion.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.speed = deathExplosionAnimationSpeed;
+        }
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionAnimationSpeed(child.gameObject);
         }
     }
 

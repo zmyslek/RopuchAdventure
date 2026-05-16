@@ -50,23 +50,21 @@ public class RopuchBulletScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Gryf"))
+        // Prefer calling enemy-specific hit methods so death animations/playback run.
+        GryficaScript gryfica = collision.gameObject.GetComponent<GryficaScript>();
+        if (gryfica != null)
         {
-            GryficaScript gryficaScript = collision.gameObject.GetComponent<GryficaScript>();
-            if (gryficaScript != null)
-            {
-                gryficaScript.decrLifeUnits();
-            }
-
+            gryfica.decrLifeUnits();
             DestroyBullet();
             return;
         }
 
-        GryficaScript gryficaScriptOnCollision = collision.gameObject.GetComponent<GryficaScript>();
-        if (gryficaScriptOnCollision != null)
+        DziuniaScript dziunia = collision.gameObject.GetComponent<DziuniaScript>();
+        if (dziunia != null)
         {
-            gryficaScriptOnCollision.decrLifeUnits();
+            dziunia.TakeHit();
             DestroyBullet();
+            return;
         }
     }
 
@@ -84,7 +82,7 @@ public class RopuchBulletScript : MonoBehaviour
 
     void PlayLaunchSound()
     {
-        if (ropuchBulletSound != null)
+        if (ropuchBulletSound != null && !AudioMuteManager.MuteRopuch)
         {
             AudioSource.PlayClipAtPoint(ropuchBulletSound, transform.position, 0.35f);
         }
@@ -92,7 +90,7 @@ public class RopuchBulletScript : MonoBehaviour
 
     void PlayDestroySound()
     {
-        if (ropuchBulletSound != null)
+        if (ropuchBulletSound != null && !AudioMuteManager.MuteRopuch)
         {
             AudioSource.PlayClipAtPoint(ropuchBulletSound, transform.position, 0.5f);
         }

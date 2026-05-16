@@ -62,6 +62,15 @@ public class DziuniaBulletScript : MonoBehaviour
             return;
         }
 
+        // If hit player, destroy player
+        RopuchControllerScript rop = collision.gameObject.GetComponent<RopuchControllerScript>();
+        if (rop != null)
+        {
+            rop.LoseLife();
+            Destroy(gameObject);
+            return;
+        }
+
         // existing behavior for other collisions can remain (e.g., hitting the player)
     }
 

@@ -26,6 +26,7 @@ public class RopuchControllerScript : MonoBehaviour
     bool canJump;
     bool jumpRequested;
     bool isAttacking;
+    bool isDying;
 
     [SerializeField]
     float gryfDamageCooldown = 0.75f;
@@ -44,6 +45,21 @@ public class RopuchControllerScript : MonoBehaviour
 
     [SerializeField]
     GameObject bullet;
+
+    [SerializeField]
+    GameObject deathExplosion;
+
+    [SerializeField]
+    float deathSequenceDelay = 0.8f;
+
+    [SerializeField]
+    float deathExplosionAnimationSpeed = 0.6f;
+
+    [SerializeField]
+    int deathExplosionLayer;
+
+    [SerializeField]
+    int deathExplosionSortingOrder;
 
     GameObject lGun;
     GameObject rGun;
@@ -76,11 +92,21 @@ public class RopuchControllerScript : MonoBehaviour
         nextOuchSoundTime = 0.0f;
 
         isAttacking = false;
+        isDying = false;
         nextGryfDamageTime = 0.0f;
+        deathSequenceDelay = deathSequenceDelay <= 0.0f ? 1.4f : deathSequenceDelay;
+        deathExplosionAnimationSpeed = deathExplosionAnimationSpeed <= 0.0f ? 0.6f : deathExplosionAnimationSpeed;
+        deathExplosionLayer = deathExplosionLayer < 0 ? 11 : deathExplosionLayer;
+        deathExplosionSortingOrder = deathExplosionSortingOrder <= 0 ? 12 : deathExplosionSortingOrder;
     }
 
     void Update()
     {
+        if (isDying)
+        {
+            return;
+        }
+
         moveX = canJump ? Input.GetAxisRaw("Horizontal") : 0.0f;
 
         if (canJump)
@@ -169,6 +195,12 @@ public class RopuchControllerScript : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isDying)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
         if (jumpRequested)
         {
             rb.velocity = new Vector2(jumpDirectionX * jumpHorizontalForce, jumpForce);
@@ -222,6 +254,11 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (isDying)
+        {
+            return;
+        }
+
         if (collision.gameObject.CompareTag("Portal"))
         {
             Debug.Log("Portal triggered: setting final lives and loading end scene. FinalLives before=" + ScoreState.FinalLives);
@@ -239,6 +276,11 @@ public class RopuchControllerScript : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
+        if (isDying)
+        {
+            return;
+        }
+
         if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             if (IsOnTopOfCollider(collision))
@@ -287,6 +329,11 @@ public class RopuchControllerScript : MonoBehaviour
 
     public void LoseLife()
     {
+        if (isDying)
+        {
+            return;
+        }
+
         PlayOuchSound();
 
         if (LifeHandler.Instance != null)
@@ -295,8 +342,7 @@ public class RopuchControllerScript : MonoBehaviour
             if (!LifeHandler.Instance.CanPlay("Ropuch"))
             {
                 ScoreState.FinalLives = 0;
-                Destroy(gameObject);
-                SceneManager.LoadScene(2);
+                StartCoroutine(PlayDeathAndLoadEndScene());
             }
             return;
         }
@@ -305,10 +351,100 @@ public class RopuchControllerScript : MonoBehaviour
         lives--;
         if (lives <= 0)
         {
-            ScoreState.FinalLives = lives;
-            Destroy(gameObject);
-            SceneManager.LoadScene(2);
+            ScoreState.FinalLives = 0;
+            StartCoroutine(PlayDeathAndLoadEndScene());
         }
+    }
+
+    IEnumerator PlayDeathAndLoadEndScene()
+    {
+        if (isDying)
+        {
+            yield break;
+        }
+
+        isDying = true;
+        isAttacking = false;
+        canJump = false;
+        jumpRequested = false;
+
+        rb.velocity = Vector2.zero;
+        ar.speed = 1.0f;
+        ar.SetInteger("State", 0);
+
+        RotateDeathVisual();
+
+        if (deathExplosion != null)
+        {
+            GameObject explosion = Instantiate(deathExplosion, transform.position, transform.rotation);
+            SetExplosionRenderSettings(explosion);
+            SetExplosionAnimationSpeed(explosion);
+        }
+
+        yield return new WaitForSeconds(deathSequenceDelay);
+
+        Destroy(gameObject);
+        SceneManager.LoadScene(2);
+    }
+
+    void SetExplosionRenderSettings(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        explosion.layer = deathExplosionLayer;
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionRenderSettings(child.gameObject);
+        }
+
+        SpriteRenderer spriteRenderer = explosion.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = deathExplosionSortingOrder;
+        }
+    }
+
+    void SetExplosionAnimationSpeed(GameObject explosion)
+    {
+        if (explosion == null)
+        {
+            return;
+        }
+
+        Animator animator = explosion.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.speed = deathExplosionAnimationSpeed;
+        }
+
+        foreach (Transform child in explosion.transform)
+        {
+            SetExplosionAnimationSpeed(child.gameObject);
+        }
+    }
+
+    void RotateDeathVisual()
+    {
+        if (sr == null)
+        {
+            return;
+        }
+
+        // Rotate only visual transform so camera/follow objects parented to Ropuch are unaffected.
+        Transform visualTransform = sr.transform;
+        if (visualTransform != transform)
+        {
+            Vector3 euler = visualTransform.eulerAngles;
+            euler.x += 180.0f;
+            visualTransform.eulerAngles = euler;
+            return;
+        }
+
+        sr.flipY = !sr.flipY;
     }
 
     void PlayOuchSound()
@@ -319,6 +455,11 @@ public class RopuchControllerScript : MonoBehaviour
         }
 
         if (ouchAudio == null)
+        {
+            return;
+        }
+
+        if (AudioMuteManager.MuteRopuch)
         {
             return;
         }
