@@ -56,6 +56,13 @@ public class DziuniaBulletScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // Destroy bullet when touching floor or platform
+        if (collision.CompareTag("Floor") || collision.CompareTag("Platform"))
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         // Do not affect Gryfica (enemy) with Dziunia's bullets
         if (collision.gameObject.GetComponent<GryficaScript>() != null)
         {

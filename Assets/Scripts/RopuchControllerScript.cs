@@ -15,7 +15,6 @@ public class RopuchControllerScript : MonoBehaviour
     [SerializeField]
     int lives;
 
-    float speed;
     float walkSpeed;
     float jumpForce;
     float jumpHorizontalForce;
@@ -78,7 +77,6 @@ public class RopuchControllerScript : MonoBehaviour
         lGun = GameObject.FindGameObjectWithTag("LeftGun");
         rGun = GameObject.FindGameObjectWithTag("RightGun");
 
-        speed = 7.0f;
         walkSpeed = 3.5f;
         jumpForce = 6.9f;
         jumpHorizontalForce = 1.5f;
@@ -111,7 +109,7 @@ public class RopuchControllerScript : MonoBehaviour
             return;
         }
 
-        moveX = canJump ? Input.GetAxisRaw("Horizontal") : 0.0f;
+        moveX = Input.GetAxisRaw("Horizontal");
 
         if (canJump)
         {
@@ -213,14 +211,15 @@ public class RopuchControllerScript : MonoBehaviour
             canJump = false;
         }
 
-        if (canJump && !isAttacking)
+        // Only allow walking while grounded.
+        if (canJump && !isAttacking && Mathf.Abs(moveX) > 0.01f)
         {
-            float currentSpeed = Mathf.Abs(moveX) > 0.01f ? walkSpeed : speed;
+            float currentSpeed = walkSpeed;
             Vector2 nextPos = rb.position + new Vector2(moveX * currentSpeed * Time.fixedDeltaTime, 0.0f);
             rb.MovePosition(nextPos);
             rb.velocity = new Vector2(0.0f, rb.velocity.y);
         }
-        else if (canJump && isAttacking)
+        else if (isAttacking)
         {
             rb.velocity = new Vector2(0.0f, 0.0f);
         }
@@ -301,15 +300,18 @@ public class RopuchControllerScript : MonoBehaviour
             {
                 nextGryfDamageTime = Time.time + Mathf.Max(0.05f, gryfDamageCooldown);
                 LoseLife();
+                gryfica.decrLifeUnits();
             }
         }
 
         if (collision.gameObject.CompareTag("Dziunia"))
         {
             DziuniaScript dziunia = collision.GetComponent<DziuniaScript>();
-            if (dziunia != null)
+            if (dziunia != null && Time.time >= nextGryfDamageTime)
             {
+                nextGryfDamageTime = Time.time + Mathf.Max(0.05f, gryfDamageCooldown);
                 LoseLife();
+                dziunia.TakeHit();
             }
         }
     }

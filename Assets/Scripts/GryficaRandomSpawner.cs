@@ -20,7 +20,7 @@ public class GryficaRandomSpawner : MonoBehaviour
     float maxSpawnDelay = 5.0f;
 
     [SerializeField]
-    float minHorizontalSeparation = 1.0f;
+    float minHorizontalSeparation = 0.4f;
 
     [SerializeField]
     float minDistanceFromDziunia = 3.0f;
@@ -253,15 +253,14 @@ public class GryficaRandomSpawner : MonoBehaviour
             return Random.Range(clampedMin, clampedMax);
         }
 
-        for (int i = 0; i < 8; i++)
+        // Ensure new Gryfica spawns to the right of the last one
+        float minNewX = lastSpawnX + minHorizontalSeparation;
+        if (minNewX <= clampedMax)
         {
-            float candidate = Random.Range(clampedMin, clampedMax);
-            if (Mathf.Abs(candidate - lastSpawnX) >= Mathf.Max(0.0f, minHorizontalSeparation))
-            {
-                return candidate;
-            }
+            return Random.Range(Mathf.Max(minNewX, clampedMin), clampedMax);
         }
 
+        // If can't fit to the right, wrap around (restart from left)
         return Random.Range(clampedMin, clampedMax);
     }
 
@@ -277,6 +276,10 @@ public class GryficaRandomSpawner : MonoBehaviour
 
         float targetBottomY = floorBounds.max.y;
         float deltaY = targetBottomY - gryfBounds.min.y;
+        
+        // Add extra padding to account for animation frame shifts that could push Gryfica underground
+        float animationPadding = 0.3f;
+        deltaY += animationPadding;
 
         float availableMinX = floorBounds.min.x + floorEdgePadding;
         float availableMaxX = floorBounds.max.x - floorEdgePadding;

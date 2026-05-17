@@ -50,6 +50,13 @@ public class RopuchBulletScript : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        // Destroy bullet when touching floor or platform
+        if (collision.CompareTag("Floor") || collision.CompareTag("Platform"))
+        {
+            DestroyBullet();
+            return;
+        }
+
         // Prefer calling enemy-specific hit methods so death animations/playback run.
         GryficaScript gryfica = collision.gameObject.GetComponent<GryficaScript>();
         if (gryfica != null)
