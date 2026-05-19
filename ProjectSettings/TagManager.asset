@@ -11,10 +11,12 @@ TagManager:
   - DziuniaLeftGun
   - DziuniaRightGun
   - GryficaMain
+  - Ropuch
   - Platform
   - DziuniaShow
   - Dziunia
   - Portal
+  - Background
   layers:
   - Default
   - TransparentFX

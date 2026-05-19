@@ -5,13 +5,13 @@
   -going through the entire thing to ensure it's doable
   -lives left display
 -gnilda
-  -perfect spawning
   -lives left display
 -bg
-  -limits- fall over == game over
   -remove temp platforms
 -end screen
   -quit button
 -animation explosion prefabs loading on top
--update readme
+-ensure scenes order works correctly
+-make an exe file
+-update readme and add comments to code
   -https://audio.com/logyne-emad/audio/fairy-lands-fantasy-music-in-a-magical-forest-fantasy-ambience
