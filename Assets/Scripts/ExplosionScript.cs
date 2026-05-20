@@ -5,7 +5,7 @@ using UnityEngine;
 public class ExplosionScript : MonoBehaviour
 {
     [SerializeField]
-    int sortingOrder = 12;
+    int sortingOrder = 100;
 
     void Start()
     {
@@ -24,7 +24,7 @@ public class ExplosionScript : MonoBehaviour
         SpriteRenderer spriteRenderer = target.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            spriteRenderer.sortingOrder = 12;
+            spriteRenderer.sortingOrder = order;
         }
 
         foreach (Transform child in target.transform)

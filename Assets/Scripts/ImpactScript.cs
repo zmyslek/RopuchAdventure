@@ -5,7 +5,7 @@ using UnityEngine;
 public class ImpactScript : MonoBehaviour
 {
     [SerializeField]
-    int sortingOrder = 12;
+    int sortingOrder = 100;
 
     void Start()
     {

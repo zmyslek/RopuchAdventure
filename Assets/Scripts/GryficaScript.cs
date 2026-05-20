@@ -75,7 +75,7 @@ public class GryficaScript : MonoBehaviour
         deathDelay = deathDelay <= 0.0f ? 0.6f : deathDelay;
         deathExplosionAnimationSpeed = deathExplosionAnimationSpeed <= 0.0f ? 0.6f : deathExplosionAnimationSpeed;
         explosionLayer = explosionLayer < 0 ? 11 : explosionLayer;
-        explosionSortingOrder = explosionSortingOrder <= 0 ? 12 : explosionSortingOrder;
+        explosionSortingOrder = explosionSortingOrder <= 0 ? 100 : explosionSortingOrder;
 
         isAttacking = false;
         isDying = false;
@@ -267,12 +267,12 @@ public class GryficaScript : MonoBehaviour
             SetExplosionRenderSettings(child.gameObject);
         }
 
-        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
-        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        Renderer[] renderers = explosion.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
         {
-            if (spriteRenderer != null)
+            if (renderer != null)
             {
-                spriteRenderer.sortingOrder = 12;
+                renderer.sortingOrder = explosionSortingOrder;
             }
         }
     }

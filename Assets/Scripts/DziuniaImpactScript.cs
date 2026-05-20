@@ -72,12 +72,12 @@ public class DziuniaImpactScript : MonoBehaviour
             SetExplosionRenderSettings(child.gameObject);
         }
 
-        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
-        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        Renderer[] renderers = explosion.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
         {
-            if (spriteRenderer != null)
+            if (renderer != null)
             {
-                spriteRenderer.sortingOrder = 12;
+                renderer.sortingOrder = explosionSortingOrder;
             }
         }
     }

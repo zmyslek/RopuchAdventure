@@ -64,7 +64,7 @@ public class DziuniaScript : MonoBehaviour
         deathDelay = deathDelay <= 0.0f ? 1.4f : deathDelay;
         deathExplosionAnimationSpeed = deathExplosionAnimationSpeed <= 0.0f ? 0.6f : deathExplosionAnimationSpeed;
         deathExplosionLayer = deathExplosionLayer < 0 ? 12 : deathExplosionLayer;
-        deathExplosionSortingOrder = deathExplosionSortingOrder <= 0 ? 12 : deathExplosionSortingOrder;
+        deathExplosionSortingOrder = deathExplosionSortingOrder <= 0 ? 100 : deathExplosionSortingOrder;
 
         dziuniaShowAudioSource = gameObject.GetComponent<AudioSource>();
         if (dziuniaShowAudioSource == null)
@@ -297,12 +297,12 @@ public class DziuniaScript : MonoBehaviour
             SetExplosionRenderSettings(child.gameObject);
         }
 
-        SpriteRenderer[] spriteRenderers = explosion.GetComponentsInChildren<SpriteRenderer>(true);
-        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        Renderer[] renderers = explosion.GetComponentsInChildren<Renderer>(true);
+        foreach (Renderer renderer in renderers)
         {
-            if (spriteRenderer != null)
+            if (renderer != null)
             {
-                spriteRenderer.sortingOrder = 12;
+                renderer.sortingOrder = deathExplosionSortingOrder;
             }
         }
     }
