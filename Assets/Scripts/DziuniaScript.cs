@@ -51,6 +51,8 @@ public class DziuniaScript : MonoBehaviour
 
     void Start()
     {
+        LifeSystemBootstrap.EnsureInitialized();
+
         animator = gameObject.GetComponent<Animator>();
         sr = gameObject.GetComponent<SpriteRenderer>();
         impactScript = gameObject.GetComponent<DziuniaImpactScript>();

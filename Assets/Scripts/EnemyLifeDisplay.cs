@@ -12,9 +12,12 @@ public class EnemyLifeDisplay : MonoBehaviour
     private void OnEnable()
     {
         LifeEvents.OnGetLifeDetail += OnLifeEvent;
-        // initialize text if possible
-        if (lifeText != null)
-            lifeText.text = "";
+        SyncFromHandler();
+    }
+
+    private void Start()
+    {
+        SyncFromHandler();
     }
 
     private void OnDisable()
@@ -39,5 +42,18 @@ public class EnemyLifeDisplay : MonoBehaviour
     {
         if (lifeText != null)
             lifeText.text = value.ToString();
+    }
+
+    private void SyncFromHandler()
+    {
+        if (lifeText == null || LifeHandler.Instance == null || string.IsNullOrEmpty(ProfileId))
+        {
+            return;
+        }
+
+        if (LifeHandler.Instance.TryGetLifeState(ProfileId, out int lifeCount, out _))
+        {
+            lifeText.text = lifeCount.ToString();
+        }
     }
 }

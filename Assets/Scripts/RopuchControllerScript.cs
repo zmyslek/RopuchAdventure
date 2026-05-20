@@ -67,6 +67,8 @@ public class RopuchControllerScript : MonoBehaviour
 
     void Start()
     {
+        LifeSystemBootstrap.EnsureInitialized();
+
         ar = gameObject.GetComponent<Animator>();
         rb = gameObject.GetComponent<Rigidbody2D>();
         sr = gameObject.GetComponent<SpriteRenderer>();

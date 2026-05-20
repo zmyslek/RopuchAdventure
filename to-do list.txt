@@ -1,11 +1,7 @@
--dziunia
-  -lives left display
+-lives left display- dziunia, ropuch, gryfy
 -ropuch
   -camera boundries ?
   -going through the entire thing to ensure it's doable
-  -lives left display
--gnilda
-  -lives left display
 -bg
   -remove temp platforms
 -end screen

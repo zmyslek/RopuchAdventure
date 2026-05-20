@@ -13,6 +13,12 @@ namespace TechJuego.LifeSystem
         private void OnEnable()
         {
             LifeEvents.OnGetLifeDetail += LifeEvents_OnUpdateLife;
+            SyncFromHandler();
+        }
+
+        private void Start()
+        {
+            SyncFromHandler();
         }
 
         private void LifeEvents_OnUpdateLife(string profileId, int lifecount, string remainingTime)
@@ -29,6 +35,24 @@ namespace TechJuego.LifeSystem
         private void OnDisable()
         {
             LifeEvents.OnGetLifeDetail -= LifeEvents_OnUpdateLife;
+        }
+
+        private void SyncFromHandler()
+        {
+            if (LifeHandler.Instance == null)
+            {
+                return;
+            }
+
+            if (!LifeHandler.Instance.TryGetLifeState(ProfileId, out int lifeCount, out string remainingTime))
+            {
+                return;
+            }
+
+            if (m_LifeCount != null)
+                m_LifeCount.text = lifeCount.ToString();
+            if (m_TileRemaining != null)
+                m_TileRemaining.text = remainingTime;
         }
     }
 }

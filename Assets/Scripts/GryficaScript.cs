@@ -48,6 +48,8 @@ public class GryficaScript : MonoBehaviour
 
     void Start()
     {
+        LifeSystemBootstrap.EnsureInitialized();
+
         ar = gameObject.GetComponent<Animator>();
         sr = gameObject.GetComponentInChildren<SpriteRenderer>();
 
@@ -101,8 +103,8 @@ public class GryficaScript : MonoBehaviour
         // If LifeHandler present, use per-profile lives for Gryfica
         if (LifeHandler.Instance != null)
         {
-            LifeHandler.Instance.LooseLife("Gryfica");
-            int remainingProfile = LifeHandler.Instance.GetCurrentLifeCount("Gryfica");
+            LifeHandler.Instance.LooseLife("Gryf");
+            int remainingProfile = LifeHandler.Instance.GetCurrentLifeCount("Gryf");
             if (remainingProfile <= 0)
             {
                 ScoreState.AddEnemyKill(1);

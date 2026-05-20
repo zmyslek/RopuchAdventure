@@ -28,6 +28,61 @@ namespace TechJuego.LifeSystem
         [Header("Profile settings (configure one per character)")]
         [SerializeField] private ProfileSetting[] Profiles = new ProfileSetting[0];
 
+        private static ProfileSetting[] GetDefaultProfiles()
+        {
+            return new[]
+            {
+                new ProfileSetting { ProfileId = "Ropuch", MaxLifeCount = 30, TimeToAddLifeInSeconds = 60 },
+                new ProfileSetting { ProfileId = "Dziunia", MaxLifeCount = 10, TimeToAddLifeInSeconds = 45 },
+                new ProfileSetting { ProfileId = "Gryf", MaxLifeCount = 3, TimeToAddLifeInSeconds = 30 },
+            };
+        }
+
+        private static string NormalizeProfileId(string profileId)
+        {
+            if (string.Equals(profileId, "Gryfica", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Gryf";
+            }
+
+            return profileId;
+        }
+
+        private void EnsureDefaultProfiles()
+        {
+            if (Profiles == null || Profiles.Length == 0)
+            {
+                Profiles = GetDefaultProfiles();
+            }
+
+            for (int i = 0; i < Profiles.Length; i++)
+            {
+                if (Profiles[i] == null)
+                {
+                    continue;
+                }
+
+                Profiles[i].ProfileId = NormalizeProfileId(Profiles[i].ProfileId);
+            }
+        }
+
+        private void BroadcastProfileState(ProfileEntry entry, ProfileSetting setting)
+        {
+            if (entry == null || setting == null)
+            {
+                return;
+            }
+
+            string remainingTime = "Full";
+            if (entry.CurrentLifeCount < setting.MaxLifeCount && entry.AddedNextTime.Count > 0)
+            {
+                TimeSpan span = DateTime.Parse(entry.AddedNextTime[0]) - DateTime.Now;
+                remainingTime = GetRemainingTime(span);
+            }
+
+            LifeEvents.OnGetLifeDetail?.Invoke(entry.ProfileId, entry.CurrentLifeCount, remainingTime);
+        }
+
         private void Awake()
         {
             if (Instance == null)
@@ -40,6 +95,8 @@ namespace TechJuego.LifeSystem
                 Destroy(gameObject);
                 return;
             }
+
+            EnsureDefaultProfiles();
 
             if (PlayerPrefs.HasKey(lifeHolder))
             {
@@ -59,6 +116,8 @@ namespace TechJuego.LifeSystem
                 if (string.IsNullOrEmpty(p.ProfileId))
                     continue;
 
+                p.ProfileId = NormalizeProfileId(p.ProfileId);
+
                 var entry = lifeData.profiles.FirstOrDefault(x => x.ProfileId == p.ProfileId);
                 if (entry == null)
                 {
@@ -72,6 +131,11 @@ namespace TechJuego.LifeSystem
                 }
             }
 
+            foreach (var entry in lifeData.profiles)
+            {
+                entry.ProfileId = NormalizeProfileId(entry.ProfileId);
+            }
+
             PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
             CheckLife();
         }
@@ -79,6 +143,7 @@ namespace TechJuego.LifeSystem
         // reduce life for a specific profile
         public void LooseLife(string profileId)
         {
+            profileId = NormalizeProfileId(profileId);
             var entry = GetProfileEntry(profileId);
             var setting = GetProfileSetting(profileId);
             if (entry == null || setting == null)
@@ -89,12 +154,14 @@ namespace TechJuego.LifeSystem
                 entry.CurrentLifeCount -= 1;
                 PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
                 SetTimeToAddNextLife(profileId);
+                BroadcastProfileState(entry, setting);
             }
         }
 
         // add life for profile
         public void AddLife(string profileId)
         {
+            profileId = NormalizeProfileId(profileId);
             var entry = GetProfileEntry(profileId);
             var setting = GetProfileSetting(profileId);
             if (entry == null || setting == null)
@@ -103,13 +170,20 @@ namespace TechJuego.LifeSystem
             if (entry.CurrentLifeCount < setting.MaxLifeCount)
             {
                 entry.CurrentLifeCount += 1;
+                if (entry.CurrentLifeCount >= setting.MaxLifeCount)
+                {
+                    entry.CurrentLifeCount = setting.MaxLifeCount;
+                    entry.AddedNextTime.Clear();
+                }
                 PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
+                BroadcastProfileState(entry, setting);
             }
         }
 
         // refill all lives for a profile
         public void RefillLife(string profileId)
         {
+            profileId = NormalizeProfileId(profileId);
             var entry = GetProfileEntry(profileId);
             var setting = GetProfileSetting(profileId);
             if (entry == null || setting == null)
@@ -118,6 +192,7 @@ namespace TechJuego.LifeSystem
             entry.CurrentLifeCount = setting.MaxLifeCount;
             entry.AddedNextTime = new System.Collections.Generic.List<string>();
             PlayerPrefs.SetString(lifeHolder, JsonUtility.ToJson(lifeData));
+            BroadcastProfileState(entry, setting);
         }
 
         // update remaining time per-profile
@@ -140,6 +215,10 @@ namespace TechJuego.LifeSystem
                             entry.AddedNextTime.RemoveAt(0);
                             AddLife(entry.ProfileId);
                         }
+                    }
+                    else
+                    {
+                        LifeEvents.OnGetLifeDetail?.Invoke(entry.ProfileId, entry.CurrentLifeCount, "Full");
                     }
                 }
                 else
@@ -174,6 +253,7 @@ namespace TechJuego.LifeSystem
         // helper: set time to add next life for a profile
         void SetTimeToAddNextLife(string profileId)
         {
+            profileId = NormalizeProfileId(profileId);
             var entry = GetProfileEntry(profileId);
             var setting = GetProfileSetting(profileId);
             if (entry == null || setting == null)
@@ -199,17 +279,19 @@ namespace TechJuego.LifeSystem
         {
             foreach (var entry in lifeData.profiles)
             {
-                if (entry.AddedNextTime.Count > 0)
+                var setting = GetProfileSetting(entry.ProfileId);
+                if (setting == null)
                 {
-                    string times = entry.AddedNextTime[entry.AddedNextTime.Count - 1];
-                    TimeSpan span = DateTime.Parse(times) - DateTime.Now;
-                    LifeEvents.OnGetLifeDetail?.Invoke(entry.ProfileId, entry.CurrentLifeCount, GetRemainingTime(span));
+                    continue;
                 }
+
+                BroadcastProfileState(entry, setting);
             }
         }
 
         ProfileEntry GetProfileEntry(string id)
         {
+            id = NormalizeProfileId(id);
             if (string.IsNullOrEmpty(id))
                 return null;
             return lifeData.profiles.FirstOrDefault(x => x.ProfileId == id);
@@ -217,6 +299,7 @@ namespace TechJuego.LifeSystem
 
         ProfileSetting GetProfileSetting(string id)
         {
+            id = NormalizeProfileId(id);
             if (Profiles == null)
                 return null;
             return Profiles.FirstOrDefault(x => x.ProfileId == id);
@@ -227,6 +310,30 @@ namespace TechJuego.LifeSystem
         {
             var e = GetProfileEntry(id);
             return e == null ? 0 : e.CurrentLifeCount;
+        }
+
+        public bool TryGetLifeState(string id, out int lifeCount, out string remainingTime)
+        {
+            id = NormalizeProfileId(id);
+
+            lifeCount = 0;
+            remainingTime = "Full";
+
+            var entry = GetProfileEntry(id);
+            var setting = GetProfileSetting(id);
+            if (entry == null || setting == null)
+            {
+                return false;
+            }
+
+            lifeCount = entry.CurrentLifeCount;
+            if (entry.CurrentLifeCount < setting.MaxLifeCount && entry.AddedNextTime.Count > 0)
+            {
+                TimeSpan span = DateTime.Parse(entry.AddedNextTime[0]) - DateTime.Now;
+                remainingTime = GetRemainingTime(span);
+            }
+
+            return true;
         }
     }
 }
