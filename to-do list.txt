@@ -2,6 +2,5 @@
   -camera boundries ?
 -end screen
   -quit button
--organizing files ? 
 -ensure scenes order works correctly
 -make an exe file
