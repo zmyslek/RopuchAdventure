@@ -1,3 +1,7 @@
+/*
+ * Script: ExitButtonScript.cs
+ * Purpose: UI button handler to exit to main menu and reset score state.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

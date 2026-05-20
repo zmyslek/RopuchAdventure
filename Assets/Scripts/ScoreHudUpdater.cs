@@ -1,3 +1,7 @@
+/*
+ * Script: ScoreHudUpdater.cs
+ * Purpose: Updates HUD elements for coins and enemies when ScoreState changes.
+ */
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;

@@ -1,3 +1,7 @@
+/*
+ * Script: StartButtonScript.cs
+ * Purpose: UI button handler to start the game and reset `ScoreState`.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

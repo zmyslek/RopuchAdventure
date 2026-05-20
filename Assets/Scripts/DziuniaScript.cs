@@ -1,3 +1,7 @@
+/*
+ * Script: DziuniaScript.cs
+ * Purpose: Controls Dziunia enemy AI, movement and hit handling.
+ */
 using System.Collections;
 using UnityEngine;
 using TechJuego.LifeSystem;

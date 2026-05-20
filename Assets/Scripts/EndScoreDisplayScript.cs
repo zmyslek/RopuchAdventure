@@ -2,6 +2,11 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
+/*
+ * Script: EndScoreDisplayScript.cs
+ * Purpose: Formats and displays the final score and end-status text on the
+ * end screen (win/lose) based on `ScoreState` values.
+ */
 public class EndScoreDisplayScript : MonoBehaviour
 {
     [SerializeField]
@@ -32,7 +37,6 @@ public class EndScoreDisplayScript : MonoBehaviour
                 statusText.text = "you win";
             }
         }
-            Debug.Log("EndScoreDisplay: FinalLives=" + ScoreState.FinalLives + "; statusText assigned=" + (statusText != null));
 
             if (statusText == null)
             {
@@ -40,7 +44,6 @@ public class EndScoreDisplayScript : MonoBehaviour
                 if (st != null)
                 {
                     statusText = st.GetComponent<Text>();
-                    Debug.Log("EndScoreDisplay: found statusText by name: " + (statusText != null));
                 }
             }
 
@@ -65,7 +68,6 @@ public class EndScoreDisplayScript : MonoBehaviour
                 if (candidate != null)
                 {
                     statusText = candidate;
-                    Debug.Log("EndScoreDisplay: found statusText by scan: " + candidate.gameObject.name + " / '" + candidate.text + "'");
                 }
             }
 

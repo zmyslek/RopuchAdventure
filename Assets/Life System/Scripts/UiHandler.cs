@@ -1,3 +1,7 @@
+/*
+ * Script: UiHandler.cs
+ * Purpose: Sample UI hooks to control the LifeHandler (add/lose/refill lives).
+ */
 using UnityEngine;
 using UnityEngine.UI;
 namespace TechJuego.LifeSystem

@@ -1,3 +1,8 @@
+/*
+ * Script: FallZoneScript.cs
+ * Purpose: Handles objects entering fall zones (player/enemies) and triggers
+ * scene transitions or destruction.
+ */
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

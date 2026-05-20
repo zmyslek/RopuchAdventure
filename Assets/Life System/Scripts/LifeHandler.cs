@@ -1,3 +1,7 @@
+/*
+ * Script: LifeHandler.cs
+ * Purpose: Manages per-profile life counts, timers and broadcasts life events.
+ */
 using System;
 using UnityEngine;
 using System.Linq;

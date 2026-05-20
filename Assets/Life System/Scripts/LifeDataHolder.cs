@@ -1,3 +1,7 @@
+/*
+ * Script: LifeDataHolder.cs
+ * Purpose: Serializable container classes for saving per-profile life state.
+ */
 using System.Collections.Generic;
 
 //Classes to store current life progress and time to add next life per profile

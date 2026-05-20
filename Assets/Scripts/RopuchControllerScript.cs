@@ -4,6 +4,11 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using TechJuego.LifeSystem;
 
+/*
+ * Script: RopuchControllerScript.cs
+ * Purpose: Handles player movement, jumping, attacking, life management and
+ * death/portal transitions for the Ropuch player character.
+ */
 public class RopuchControllerScript : MonoBehaviour
 {
     const float ouchSoundCooldown = 0.4f;
@@ -296,7 +301,6 @@ public class RopuchControllerScript : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Portal"))
         {
-            Debug.Log("Portal triggered: setting final lives and loading end scene. FinalLives before=" + ScoreState.FinalLives);
             ScoreState.FinalLives = Mathf.Max(1, ScoreState.FinalLives);
             SceneManager.LoadScene(2);
             return;

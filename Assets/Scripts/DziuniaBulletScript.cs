@@ -1,3 +1,7 @@
+/*
+ * Script: DziuniaBulletScript.cs
+ * Purpose: Implements projectile behavior for Dziunia enemy bullets.
+ */
 using UnityEngine;
 
 public class DziuniaBulletScript : MonoBehaviour

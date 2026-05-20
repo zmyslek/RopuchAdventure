@@ -1,3 +1,7 @@
+/*
+ * Script: GryficaScript.cs
+ * Purpose: Enemy behaviour for Gryfica (attacks, damage and death handling).
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

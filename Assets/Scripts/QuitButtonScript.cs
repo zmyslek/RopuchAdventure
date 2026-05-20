@@ -1,3 +1,7 @@
+/*
+ * Script: QuitButtonScript.cs
+ * Purpose: UI button handler to quit the application.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

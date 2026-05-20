@@ -1,3 +1,7 @@
+/*
+ * Script: Prefab Manager.cs
+ * Purpose: Demo helper to instantiate and preview effect prefabs in the scene.
+ */
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;

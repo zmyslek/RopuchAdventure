@@ -1,3 +1,7 @@
+/*
+ * Script: RopuchBulletScript.cs
+ * Purpose: Projectile behavior for the player's bullets.
+ */
 using UnityEngine;
 
 public class RopuchBulletScript : MonoBehaviour

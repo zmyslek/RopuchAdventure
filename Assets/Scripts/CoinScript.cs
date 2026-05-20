@@ -1,3 +1,7 @@
+/*
+ * Script: CoinScript.cs
+ * Purpose: Handles coin pickup behavior and notifies score systems.
+ */
 using UnityEngine;
 
 public class CoinScript : MonoBehaviour

@@ -1,3 +1,7 @@
+/*
+ * Script: ExplosionScript.cs
+ * Purpose: Utility for setting explosion render order and destroying after animation.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

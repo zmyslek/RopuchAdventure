@@ -1,3 +1,8 @@
+/*
+ * Script: LifeSystemBootstrap.cs
+ * Purpose: Ensures life system components are present in the scene and creates
+ * world indicators for known entities.
+ */
 using UnityEngine;
 using UnityEngine.UI;
 

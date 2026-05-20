@@ -1,3 +1,7 @@
+/*
+ * Script: LifeUi.cs
+ * Purpose: UI bridge showing a single profile's life count and remaining time.
+ */
 using System;
 using UnityEngine;
 using UnityEngine.UI;

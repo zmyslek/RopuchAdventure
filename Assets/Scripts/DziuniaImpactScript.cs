@@ -1,3 +1,7 @@
+/*
+ * Script: DziuniaImpactScript.cs
+ * Purpose: Plays an explosion/impact effect when Dziunia impacts.
+ */
 using System.Collections;
 using UnityEngine;
 

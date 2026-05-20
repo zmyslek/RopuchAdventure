@@ -1,3 +1,7 @@
+/*
+ * Script: LifeWorldIndicator.cs
+ * Purpose: Renders a world-space life indicator (hearts/timer) above entities.
+ */
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;

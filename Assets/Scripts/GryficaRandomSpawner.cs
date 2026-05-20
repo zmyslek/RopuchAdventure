@@ -1,3 +1,7 @@
+/*
+ * Script: GryficaRandomSpawner.cs
+ * Purpose: Spawns Gryfica enemies at random intervals/locations based on scene geometry.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

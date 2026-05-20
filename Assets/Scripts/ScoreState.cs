@@ -1,3 +1,7 @@
+/*
+ * Script: ScoreState.cs
+ * Purpose: Centralized in-memory score and stats holder used across scenes.
+ */
 using System;
 using UnityEngine;
 

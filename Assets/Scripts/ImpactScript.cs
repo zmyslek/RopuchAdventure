@@ -1,3 +1,7 @@
+/*
+ * Script: ImpactScript.cs
+ * Purpose: Utility to set sprite sorting order recursively for impact effects.
+ */
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
