@@ -34,6 +34,8 @@ public class GryficaRandomSpawner : MonoBehaviour
 
     void Start()
     {
+        TechJuego.LifeSystem.LifeSystemBootstrap.EnsureInitialized();
+
         GameObject resourcePrefab = Resources.Load<GameObject>("Prefabs/GryficaMain");
         if (resourcePrefab != null)
         {
@@ -121,6 +123,11 @@ public class GryficaRandomSpawner : MonoBehaviour
         if (boxCollider != null)
         {
             FitGryficaToFloor(newGryfica, boxCollider, floorCollider);
+        }
+
+        if (TechJuego.LifeSystem.LifeHandler.Instance != null)
+        {
+            TechJuego.LifeSystem.LifeHandler.Instance.RefillLife("Gryf");
         }
 
         currentGryfica = newGryfica;

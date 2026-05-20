@@ -7,13 +7,14 @@ namespace TechJuego.LifeSystem
     public class LifeWorldIndicator : MonoBehaviour
     {
         [SerializeField] private string ProfileId = "";
-        [SerializeField] private float VerticalOffset = 2.0f;
-        [SerializeField] private Vector2 PanelSize = new Vector2(180.0f, 40.0f);
-        [SerializeField] private float HeartSize = 22.0f;
-        [SerializeField] private float HeartSpacing = 2.0f;
+        [SerializeField] private float VerticalOffset = 1.45f;
+        [SerializeField] private Vector2 PanelSize = new Vector2(230.0f, 56.0f);
+        [SerializeField] private float HeartSize = 28.0f;
+        [SerializeField] private float HeartSpacing = 4.0f;
 
         private Transform target;
         private RectTransform heartsRoot;
+        private Text remainingText;
         private readonly List<GameObject> heartObjects = new List<GameObject>();
         private bool initialized;
 
@@ -67,6 +68,7 @@ namespace TechJuego.LifeSystem
             }
 
             UpdateHearts(lifecount);
+            UpdateRemainingTime(remainingTime);
         }
 
         private void BuildIfNeeded()
@@ -76,12 +78,22 @@ namespace TechJuego.LifeSystem
                 return;
             }
 
-            initialized = true;
+            if (string.IsNullOrEmpty(ProfileId))
+            {
+                return;
+            }
 
             if (target == null)
             {
                 target = transform.parent;
             }
+
+            if (target == null)
+            {
+                return;
+            }
+
+            initialized = true;
 
             RectTransform rectTransform = GetComponent<RectTransform>();
             if (rectTransform == null)
@@ -116,15 +128,10 @@ namespace TechJuego.LifeSystem
             transform.localScale = Vector3.one * 0.01f;
             transform.localRotation = Quaternion.identity;
 
-            Image background = gameObject.AddComponent<Image>();
-            background.sprite = Resources.Load<Sprite>("Images/LifeSystem/RoundedRectangle");
-            background.color = new Color(0.03f, 0.03f, 0.05f, 0.75f);
-            background.type = Image.Type.Sliced;
-
             VerticalLayoutGroup layout = gameObject.AddComponent<VerticalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 0.0f;
-            layout.padding = new RectOffset(8, 8, 6, 6);
+            layout.spacing = 2.0f;
+            layout.padding = new RectOffset(0, 0, 0, 0);
             layout.childControlWidth = true;
             layout.childControlHeight = true;
             layout.childForceExpandWidth = false;
@@ -150,7 +157,18 @@ namespace TechJuego.LifeSystem
             LayoutElement rowElement = heartsObject.GetComponent<LayoutElement>();
             rowElement.preferredHeight = HeartSize;
 
+            if (string.Equals(ProfileId, "Ropuch", System.StringComparison.OrdinalIgnoreCase))
+            {
+                GameObject timerObject = CreateTimerObject(transform);
+                LayoutElement timerElement = timerObject.AddComponent<LayoutElement>();
+                timerElement.preferredHeight = 20.0f;
+                remainingText = timerObject.GetComponent<Text>();
+                remainingText.text = "Next life: Full";
+            }
+
             transform.name = string.IsNullOrEmpty(ProfileId) ? "LifeWorldIndicator" : ProfileId + "LifeIndicator";
+
+            UpdateRemainingTime("Full");
         }
 
         private GameObject CreateHeartObject(Transform parent, int index)
@@ -173,6 +191,28 @@ namespace TechJuego.LifeSystem
             }
 
             return heart;
+        }
+
+        private GameObject CreateTimerObject(Transform parent)
+        {
+            GameObject textObject = new GameObject("Cooldown", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.transform.SetParent(parent, false);
+
+            Text uiText = textObject.GetComponent<Text>();
+            uiText.text = "Next life: Full";
+            uiText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            uiText.fontSize = 16;
+            uiText.fontStyle = FontStyle.Normal;
+            uiText.color = new Color(0.92f, 0.95f, 1.0f, 1.0f);
+            uiText.alignment = TextAnchor.MiddleCenter;
+            uiText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            uiText.verticalOverflow = VerticalWrapMode.Overflow;
+            uiText.raycastTarget = false;
+
+            RectTransform rect = textObject.GetComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(220.0f, 20.0f);
+
+            return textObject;
         }
 
         private void UpdateHearts(int lifeCount)
@@ -210,6 +250,16 @@ namespace TechJuego.LifeSystem
             }
         }
 
+        private void UpdateRemainingTime(string remainingTime)
+        {
+            if (remainingText == null)
+            {
+                return;
+            }
+
+            remainingText.text = string.IsNullOrEmpty(remainingTime) ? "Next life: Full" : "Next life: " + remainingTime;
+        }
+
         private void SyncFromHandler()
         {
             if (LifeHandler.Instance == null || string.IsNullOrEmpty(ProfileId))
@@ -220,6 +270,7 @@ namespace TechJuego.LifeSystem
             if (LifeHandler.Instance.TryGetLifeState(ProfileId, out int lifeCount, out string remainingTime))
             {
                 UpdateHearts(lifeCount);
+                UpdateRemainingTime(remainingTime);
             }
         }
 
