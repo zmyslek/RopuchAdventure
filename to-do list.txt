@@ -4,6 +4,8 @@
   -going through the entire thing to ensure it's doable
 -bg
   -remove temp platforms
+-start screen
+  -health explanation
 -end screen
   -quit button
 -animation explosion prefabs loading on top

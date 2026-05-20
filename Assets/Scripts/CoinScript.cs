@@ -21,6 +21,13 @@ public class CoinScript : MonoBehaviour
 
         isCollected = true;
         ScoreState.AddCoin(coinValue);
+
+        RopuchControllerScript ropuch = collision.GetComponentInParent<RopuchControllerScript>();
+        if (ropuch != null)
+        {
+            ropuch.AddLife(1);
+        }
+
         Destroy(gameObject);
     }
 }

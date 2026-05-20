@@ -51,7 +51,23 @@ public class GryficaScript : MonoBehaviour
         LifeSystemBootstrap.EnsureInitialized();
 
         ar = gameObject.GetComponent<Animator>();
+        if (ar == null)
+        {
+            ar = GetComponentInChildren<Animator>();
+        }
+
         sr = gameObject.GetComponentInChildren<SpriteRenderer>();
+        if (sr == null)
+        {
+            sr = GetComponent<SpriteRenderer>();
+        }
+
+        if (ar == null || sr == null)
+        {
+            Debug.LogError("GryficaScript: missing required components.");
+            enabled = false;
+            return;
+        }
 
         maxHits = 3;
         yeeshTime = yeeshTime <= 0.0f ? 0.6f : yeeshTime;
@@ -86,6 +102,11 @@ public class GryficaScript : MonoBehaviour
 
     void Update()
     {
+        if (ar == null || sr == null)
+        {
+            return;
+        }
+
         if (!isAttacking && !isDying)
         {
             ar.SetInteger("State", 0);

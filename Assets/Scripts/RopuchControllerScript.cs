@@ -70,8 +70,29 @@ public class RopuchControllerScript : MonoBehaviour
         LifeSystemBootstrap.EnsureInitialized();
 
         ar = gameObject.GetComponent<Animator>();
+        if (ar == null)
+        {
+            ar = GetComponentInChildren<Animator>();
+        }
+
         rb = gameObject.GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            rb = GetComponentInParent<Rigidbody2D>();
+        }
+
         sr = gameObject.GetComponent<SpriteRenderer>();
+        if (sr == null)
+        {
+            sr = GetComponentInChildren<SpriteRenderer>(true);
+        }
+
+        if (ar == null || rb == null || sr == null)
+        {
+            Debug.LogError("RopuchControllerScript: missing required components.");
+            enabled = false;
+            return;
+        }
 
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
@@ -87,7 +108,7 @@ public class RopuchControllerScript : MonoBehaviour
         maxJumpCount = 2;
         jumpsRemaining = maxJumpCount;
 
-        lives = lives <= 0 ? 30 : lives;
+        lives = lives <= 0 ? 5 : lives;
 
         canJump = false;
         jumpRequested = false;
@@ -106,7 +127,7 @@ public class RopuchControllerScript : MonoBehaviour
 
     void Update()
     {
-        if (isDying)
+        if (isDying || ar == null || rb == null || sr == null)
         {
             return;
         }
@@ -201,7 +222,16 @@ public class RopuchControllerScript : MonoBehaviour
     {
         if (isDying)
         {
-            rb.velocity = Vector2.zero;
+            if (rb != null)
+            {
+                rb.velocity = Vector2.zero;
+            }
+
+            return;
+        }
+
+        if (rb == null)
+        {
             return;
         }
 
@@ -229,7 +259,7 @@ public class RopuchControllerScript : MonoBehaviour
 
     void ShootBullet()
     {
-        if (bullet == null)
+        if (bullet == null || sr == null)
         {
             return;
         }
@@ -328,7 +358,18 @@ public class RopuchControllerScript : MonoBehaviour
 
     bool IsOnTopOfCollider(Collider2D collision)
     {
-        Bounds rBounds = rb.GetComponent<Collider2D>().bounds;
+        Collider2D ownCollider = rb != null ? rb.GetComponent<Collider2D>() : null;
+        if (ownCollider == null)
+        {
+            ownCollider = GetComponent<Collider2D>();
+        }
+
+        if (ownCollider == null)
+        {
+            return false;
+        }
+
+        Bounds rBounds = ownCollider.bounds;
         Bounds cBounds = collision.bounds;
         float ropuchBottomY = rBounds.min.y;
         float colliderTopY = cBounds.max.y;
@@ -362,6 +403,26 @@ public class RopuchControllerScript : MonoBehaviour
             ScoreState.FinalLives = 0;
             StartCoroutine(PlayDeathAndLoadEndScene());
         }
+    }
+
+    public void AddLife(int amount = 1)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        if (LifeHandler.Instance != null)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                LifeHandler.Instance.AddLife("Ropuch");
+            }
+
+            return;
+        }
+
+        lives = Mathf.Min(5, lives + amount);
     }
 
     IEnumerator PlayDeathAndLoadEndScene()

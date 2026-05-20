@@ -32,7 +32,7 @@ namespace TechJuego.LifeSystem
         {
             return new[]
             {
-                new ProfileSetting { ProfileId = "Ropuch", MaxLifeCount = 30, TimeToAddLifeInSeconds = 60 },
+                new ProfileSetting { ProfileId = "Ropuch", MaxLifeCount = 5, TimeToAddLifeInSeconds = 60 },
                 new ProfileSetting { ProfileId = "Dziunia", MaxLifeCount = 10, TimeToAddLifeInSeconds = 45 },
                 new ProfileSetting { ProfileId = "Gryf", MaxLifeCount = 3, TimeToAddLifeInSeconds = 30 },
             };
