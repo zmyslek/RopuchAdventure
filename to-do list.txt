@@ -1,6 +1,0 @@
--ropuch
-  -camera boundries ?
--end screen
-  -quit button
--ensure scenes order works correctly
--make an exe file

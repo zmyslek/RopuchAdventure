@@ -20,10 +20,37 @@ public class DziuniaScript : MonoBehaviour
     Transform rightGun;
 
     [SerializeField]
-    float shootCooldown = 0.9f;
+    float shootCooldown = 1.5f;
 
     [SerializeField]
-    float initialShootDelay = 1.0f;
+    bool useRandomShootCooldown = false;
+
+    [SerializeField]
+    float minShootCooldown = 1.0f;
+
+    [SerializeField]
+    float maxShootCooldown = 3.0f;
+
+    [Header("Spawn Throttling")]
+    [Tooltip("Chance to actually fire when cooldown elapses (0.0 - 1.0). Lower reduces frequency without changing cooldowns.")]
+    [SerializeField]
+    float shootChance = 1.0f;
+
+    [Tooltip("Maximum consecutive shots before forcing a longer burst cooldown. Set 0 to disable.")]
+    [SerializeField]
+    int maxConsecutiveShots = 1;
+
+    [Tooltip("Cooldown (seconds) applied after a burst of consecutive shots.")]
+    [SerializeField]
+    float burstCooldown = 2.0f;
+
+    [SerializeField]
+    float shootIntervalMultiplier = 0.9f;
+
+    int consecutiveShots = 0;
+
+    [SerializeField]
+    float initialShootDelay = 2.0f;
 
     [SerializeField]
     float deathDelay = 0.4f;
@@ -52,6 +79,11 @@ public class DziuniaScript : MonoBehaviour
     float nextShootTime;
     bool canShoot;
     bool isDying;
+
+    float ApplyShootIntervalMultiplier(float interval)
+    {
+        return Mathf.Max(0.0f, interval) * Mathf.Clamp(shootIntervalMultiplier, 0.1f, 2.0f);
+    }
 
     void Start()
     {
@@ -123,7 +155,9 @@ public class DziuniaScript : MonoBehaviour
         }
 
         canShoot = true;
-        nextShootTime = Time.time;
+        // Delay the first shot when becoming visible to avoid immediate burst
+        nextShootTime = Time.time + ApplyShootIntervalMultiplier(initialShootDelay);
+        consecutiveShots = 0;
 
         // Play audio with DziuniaShow tag
         PlayDziuniaShowAudio();
@@ -137,6 +171,7 @@ public class DziuniaScript : MonoBehaviour
         StopDziuniaShowAudio();
         SetRopuchFairyAudioMuted(false);
         AudioMuteManager.MuteRopuch = false;
+        consecutiveShots = 0;
     }
 
     public void ShootBullet()
@@ -145,7 +180,23 @@ public class DziuniaScript : MonoBehaviour
         {
             return;
         }
-
+        // Chance check: skip firing sometimes to reduce overall frequency
+        if (shootChance < 1.0f && Random.value > Mathf.Clamp01(shootChance))
+        {
+            // schedule next attempt
+            if (useRandomShootCooldown)
+            {
+                float minC = Mathf.Max(0.0f, minShootCooldown);
+                float maxC = Mathf.Max(minC, maxShootCooldown);
+                nextShootTime = Time.time + ApplyShootIntervalMultiplier(Random.Range(minC, maxC));
+            }
+            else
+            {
+                nextShootTime = Time.time + ApplyShootIntervalMultiplier(shootCooldown);
+            }
+            consecutiveShots = 0;
+            return;
+        }
         Transform gun = leftGun;
         if (gun == null)
         {
@@ -160,7 +211,25 @@ public class DziuniaScript : MonoBehaviour
             bulletScript.setDir(true); // Always shoot left
         }
 
-        nextShootTime = Time.time + shootCooldown;
+        // Mark a shot and compute standard next cooldown
+        consecutiveShots++;
+        if (useRandomShootCooldown)
+        {
+            float minC = Mathf.Max(0.0f, minShootCooldown);
+            float maxC = Mathf.Max(minC, maxShootCooldown);
+            nextShootTime = Time.time + ApplyShootIntervalMultiplier(Random.Range(minC, maxC));
+        }
+        else
+        {
+            nextShootTime = Time.time + ApplyShootIntervalMultiplier(shootCooldown);
+        }
+
+        // If we've fired enough consecutive shots, enforce a longer burst cooldown
+        if (maxConsecutiveShots > 0 && consecutiveShots >= maxConsecutiveShots)
+        {
+            nextShootTime = Time.time + ApplyShootIntervalMultiplier(burstCooldown);
+            consecutiveShots = 0;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
